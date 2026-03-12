@@ -294,6 +294,66 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px 20px; font-size:13px; transition:transform 0.3s ease; z-index:300; white-space:nowrap; }
 .toast.show { transform:translateX(-50%) translateY(0); }
 .typing { display:flex; gap:4px; align-items:center; padding:4px 0; }
+
+/* UPLOAD MODE TOGGLE */
+.upload-mode-toggle { display:flex; gap:6px; margin-bottom:0; }
+.mode-btn {
+  flex:1; padding:9px 12px; border-radius:10px; font-size:12px; font-weight:600;
+  background:var(--surface2); border:1px solid var(--border); color:var(--muted);
+  cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.mode-btn.active { background:var(--accent-dim); border-color:rgba(126,217,143,0.3); color:var(--accent); }
+
+/* CAMERA */
+.camera-zone {
+  display:none; border:1.5px solid rgba(126,217,143,0.25); border-radius:var(--radius);
+  background:var(--surface); overflow:hidden; position:relative; min-height:160px;
+}
+.camera-zone.active { display:block; }
+#cameraFeed {
+  width:100%; max-height:280px; object-fit:cover; display:block;
+  border-radius:var(--radius);
+}
+.camera-overlay {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:flex-end; padding:16px;
+  background:linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+  pointer-events:none;
+}
+.camera-hint { font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:8px; }
+.camera-ring {
+  width:60px; height:60px; border-radius:50%;
+  border:3px solid rgba(126,217,143,0.5);
+  animation:pulse-ring 2s infinite;
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-60%);
+}
+@keyframes pulse-ring {
+  0%,100%{ box-shadow:0 0 0 0 rgba(126,217,143,0.4); }
+  50%{ box-shadow:0 0 0 12px rgba(126,217,143,0); }
+}
+.capture-btn {
+  width:100%; padding:14px; background:var(--accent); color:#0A0C0B;
+  border:none; border-radius:var(--radius); font-family:'DM Sans',sans-serif;
+  font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s;
+  display:none; align-items:center; justify-content:center; gap:8px; margin-top:10px;
+}
+.capture-btn.visible { display:flex; }
+.capture-btn:hover { background:#92E8A3; }
+.camera-start-btn {
+  width:100%; padding:14px; background:var(--surface2); border:1px solid rgba(126,217,143,0.3);
+  border-radius:var(--radius); color:var(--accent); font-family:'DM Sans',sans-serif;
+  font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.camera-start-btn:hover { background:var(--accent-dim); }
+.camera-controls { display:flex; gap:8px; margin-top:8px; }
+.cam-ctrl-btn {
+  flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; color:var(--muted); font-size:12px; font-weight:500;
+  cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s;
+}
+.cam-ctrl-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.15); }
 .typing span { width:6px; height:6px; border-radius:50%; background:var(--muted); animation:bounce 1.2s infinite; }
 .typing span:nth-child(2) { animation-delay:0.2s; }
 .typing span:nth-child(3) { animation-delay:0.4s; }
@@ -310,15 +370,20 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
   <div style="display:flex;align-items:center;gap:8px;">
     <a href="/history" style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:500;text-decoration:none;color:var(--muted);border:1px solid transparent;transition:all 0.2s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">📋 History</a>
     <a href="/find-dermat" style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:500;text-decoration:none;color:var(--muted);border:1px solid transparent;transition:all 0.2s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">📍 Find Dermat</a>
-    <div class="header-badge">AI Dermatologist
-        
-    </div>
+    <div class="header-badge">AI Dermatologist </div>
   </div>
 </header>
 
 <main>
   <div class="left-panel">
     <div class="section-title">Scan Your Skin</div>
+    <!-- MODE TOGGLE -->
+    <div class="upload-mode-toggle">
+      <button class="mode-btn active" id="modeUpload" onclick="switchMode('upload')">📁 Upload Photo</button>
+      <button class="mode-btn" id="modeCamera" onclick="switchMode('camera')">🤳 Live Camera</button>
+    </div>
+
+    <!-- UPLOAD ZONE -->
     <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
       <div id="uploadPlaceholder">
         <div class="upload-icon">🩺</div>
@@ -328,6 +393,28 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
       <img id="previewImg" alt="preview"/>
       <input type="file" id="fileInput" accept="image/*" onchange="handleUpload(event)">
     </div>
+
+    <!-- CAMERA ZONE -->
+    <div class="camera-zone" id="cameraZone">
+      <div id="cameraPlaceholder" style="padding:32px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:12px;">🤳</div>
+        <div style="font-size:15px;font-weight:500;margin-bottom:6px;">Live Camera Scan</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Point camera at affected skin area</div>
+        <button class="camera-start-btn" onclick="startCamera()">📷 Start Camera</button>
+      </div>
+      <video id="cameraFeed" autoplay playsinline style="display:none;"></video>
+      <canvas id="cameraCanvas" style="display:none;"></canvas>
+      <div class="camera-ring" id="cameraRing" style="display:none;"></div>
+      <div class="camera-overlay" id="cameraOverlay" style="display:none;">
+        <div class="camera-hint">Hold steady · Good lighting = better results</div>
+      </div>
+    </div>
+    <div class="camera-controls" id="cameraControls" style="display:none;">
+      <button class="cam-ctrl-btn" onclick="flipCamera()">🔄 Flip Camera</button>
+      <button class="cam-ctrl-btn" onclick="stopCamera()" style="color:var(--danger);">✕ Stop</button>
+    </div>
+    <button class="capture-btn" id="captureBtn" onclick="capturePhoto()">📸 Capture & Analyze</button>
+
     <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()" disabled>
       <span>✦</span> Analyze Skin
     </button>
@@ -689,7 +776,111 @@ const conditionRoutines = {
   }
 };
 
-// UPLOAD
+// ─── MODE TOGGLE ───
+function switchMode(mode) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  if (mode === 'upload') {
+    document.getElementById('uploadZone').style.display = 'flex';
+    document.getElementById('cameraZone').style.display = 'none';
+    document.getElementById('cameraControls').style.display = 'none';
+    document.getElementById('captureBtn').classList.remove('visible');
+    stopCamera();
+  } else {
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('cameraZone').style.display = 'block';
+  }
+}
+
+// ─── CAMERA ───
+let cameraStream = null;
+let facingMode = 'environment'; // back camera default
+
+async function startCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    const video = document.getElementById('cameraFeed');
+    video.srcObject = cameraStream;
+    video.style.display = 'block';
+    document.getElementById('cameraPlaceholder').style.display = 'none';
+    document.getElementById('cameraRing').style.display = 'block';
+    document.getElementById('cameraOverlay').style.display = 'flex';
+    document.getElementById('cameraControls').style.display = 'flex';
+    document.getElementById('captureBtn').classList.add('visible');
+    document.getElementById('analyzeBtn').style.display = 'none';
+    showToast('📷 Camera ready — hold steady!');
+  } catch (err) {
+    showToast('❌ Camera access denied. Allow camera in browser settings.');
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  const video = document.getElementById('cameraFeed');
+  video.style.display = 'none';
+  video.srcObject = null;
+  document.getElementById('cameraPlaceholder').style.display = 'block';
+  document.getElementById('cameraRing').style.display = 'none';
+  document.getElementById('cameraOverlay').style.display = 'none';
+  document.getElementById('cameraControls').style.display = 'none';
+  document.getElementById('captureBtn').classList.remove('visible');
+}
+
+async function flipCamera() {
+  facingMode = facingMode === 'environment' ? 'user' : 'environment';
+  stopCamera();
+  await startCamera();
+  showToast(facingMode === 'user' ? '🤳 Front camera' : '📷 Back camera');
+}
+
+function capturePhoto() {
+  const video = document.getElementById('cameraFeed');
+  const canvas = document.getElementById('cameraCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+
+  // Flash effect
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:fixed;inset:0;background:white;opacity:0.8;z-index:999;pointer-events:none;transition:opacity 0.3s';
+  document.body.appendChild(flash);
+  setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 300); }, 100);
+
+  canvas.toBlob(blob => {
+    // Show preview
+    const url = URL.createObjectURL(blob);
+    const img = document.getElementById('previewImg');
+    img.src = url;
+
+    // Store as file for upload
+    const file = new File([blob], 'camera_scan.jpg', { type: 'image/jpeg' });
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('fileInput').files = dt.files;
+
+    // Switch to preview mode
+    stopCamera();
+    document.getElementById('cameraZone').style.display = 'none';
+    document.getElementById('uploadZone').style.display = 'flex';
+    document.getElementById('uploadZone').classList.add('has-image');
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+    img.style.display = 'block';
+    document.getElementById('captureBtn').classList.remove('visible');
+    document.getElementById('analyzeBtn').style.display = 'flex';
+    document.getElementById('analyzeBtn').disabled = false;
+    showToast('✅ Photo captured! Click Analyze.');
+
+    // Auto analyze after 1 sec
+    setTimeout(() => analyzeImage(), 800);
+  }, 'image/jpeg', 0.92);
+}
+
+// ─── UPLOAD
 function handleUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
