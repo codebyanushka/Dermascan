@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DermaScan — AI Dermatologist</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0C0B;
+  --surface: #131513;
+  --surface2: #1A1D1A;
+  --surface3: #212421;
+  --border: rgba(255,255,255,0.07);
+  --accent: #7ED98F;
+  --accent-dim: rgba(126,217,143,0.12);
+  --warn: #F4C97A;
+  --danger: #F07070;
+  --text: #EDEEED;
+  --muted: #6B7A6D;
+  --radius: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background: radial-gradient(ellipse 60% 40% at 15% 10%, rgba(126,217,143,0.05) 0%, transparent 60%),
+              radial-gradient(ellipse 40% 60% at 85% 90%, rgba(126,217,143,0.03) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
+}
+
+/* HEADER */
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 40px;
+  border-bottom:1px solid var(--border);
+  background:rgba(10,12,11,0.9);
+  backdrop-filter:blur(20px);
+  position:sticky; top:0; z-index:100;
+}
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-icon {
+  width:36px; height:36px; border-radius:10px;
+  background:var(--accent); display:flex; align-items:center; justify-content:center;
+  font-size:18px;
+}
+.logo-name {
+  font-family:'Fraunces',serif; font-size:22px; font-weight:600;
+  letter-spacing:-0.5px; color:var(--text);
+}
+.logo-name span { color:var(--accent); }
+.header-badge {
+  background:var(--accent-dim); border:1px solid rgba(126,217,143,0.2);
+  color:var(--accent); padding:6px 14px; border-radius:20px;
+  font-size:12px; font-weight:500; letter-spacing:0.3px;
+}
+
+/* MAIN LAYOUT */
+main {
+  display:grid; grid-template-columns:1fr 420px;
+  gap:0; min-height:calc(100vh - 73px);
+  position:relative; z-index:1;
+}
+
+/* LEFT PANEL */
+.left-panel {
+  padding:40px;
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column; gap:28px;
+}
+
+.section-title {
+  font-size:12px; font-weight:600; letter-spacing:1.5px;
+  color:var(--muted); text-transform:uppercase;
+}
+
+/* Upload Zone */
+.upload-zone {
+  border:1.5px dashed rgba(126,217,143,0.25);
+  border-radius:var(--radius);
+  padding:32px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.2s ease;
+  background:var(--surface);
+  position:relative; overflow:hidden;
+}
+.upload-zone:hover {
+  border-color:rgba(126,217,143,0.5);
+  background:var(--surface2);
+}
+.upload-zone.has-image { padding:0; border-style:solid; }
+.upload-icon { font-size:32px; margin-bottom:12px; }
+.upload-text { font-size:15px; color:var(--text); font-weight:500; margin-bottom:6px; }
+.upload-sub { font-size:13px; color:var(--muted); }
+#fileInput { display:none; }
+
+#previewImg {
+  width:100%; max-height:320px; object-fit:cover;
+  border-radius:var(--radius); display:none;
+}
+
+/* Analyze Button */
+.analyze-btn {
+  width:100%; padding:16px;
+  background:var(--accent); color:#0A0C0B;
+  border:none; border-radius:var(--radius);
+  font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600;
+  cursor:pointer; transition:all 0.2s ease;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.analyze-btn:hover { background:#92E8A3; transform:translateY(-1px); }
+.analyze-btn:disabled { background:var(--surface3); color:var(--muted); cursor:not-allowed; transform:none; }
+
+/* Loading */
+.loading {
+  display:none; text-align:center; padding:20px;
+  color:var(--muted); font-size:14px;
+}
+.loading-dots::after {
+  content:''; animation:dots 1.5s infinite;
+}
+@keyframes dots {
+  0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'}
+}
+.spinner {
+  width:24px; height:24px; border:2px solid var(--border);
+  border-top-color:var(--accent); border-radius:50%;
+  animation:spin 0.8s linear infinite; margin:0 auto 12px;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* RESULT CARD */
+.result-card {
+  display:none;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  animation:fadeUp 0.4s ease;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(12px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.result-header {
+  padding:16px 20px;
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.diagnosis-name {
+  font-family:'Fraunces',serif; font-size:20px; font-weight:600;
+}
+.severity-badge {
+  padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;
+}
+.severity-mild { background:rgba(126,217,143,0.15); color:var(--accent); }
+.severity-moderate { background:rgba(244,201,122,0.15); color:var(--warn); }
+.severity-severe { background:rgba(240,112,112,0.15); color:var(--danger); }
+
+.result-body { padding:20px; display:flex; flex-direction:column; gap:16px; }
+
+.result-row {
+  display:flex; gap:12px; align-items:flex-start;
+}
+.result-row-icon {
+  width:32px; height:32px; border-radius:8px;
+  background:var(--surface2); display:flex; align-items:center;
+  justify-content:center; font-size:15px; flex-shrink:0;
+}
+.result-row-content {}
+.result-row-label { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:3px; }
+.result-row-value { font-size:14px; color:var(--text); line-height:1.5; }
+
+.tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+.tag {
+  padding:3px 10px; border-radius:20px; font-size:12px;
+  background:var(--surface3); border:1px solid var(--border);
+  color:var(--muted);
+}
+.tag-bad { background:rgba(240,112,112,0.08); border-color:rgba(240,112,112,0.2); color:var(--danger); }
+.tag-good { background:rgba(126,217,143,0.08); border-color:rgba(126,217,143,0.2); color:var(--accent); }
+
+.uncertain-note {
+  background:rgba(244,201,122,0.08);
+  border:1px solid rgba(244,201,122,0.2);
+  border-radius:10px; padding:12px 16px;
+  font-size:13px; color:var(--warn); line-height:1.5;
+}
+
+/* Disclaimer */
+.disclaimer {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px 18px;
+  font-size:12px; color:var(--muted); line-height:1.6;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.disclaimer-icon { font-size:14px; flex-shrink:0; margin-top:1px; }
+
+/* RIGHT PANEL — CHAT + SIDEBAR */
+.right-panel {
+  display:flex; flex-direction:column;
+  height:calc(100vh - 73px);
+  position:sticky; top:73px;
+}
+
+/* Tabs */
+.tabs {
+  display:flex; border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.tab {
+  flex:1; padding:14px; text-align:center;
+  font-size:13px; font-weight:500; color:var(--muted);
+  cursor:pointer; border-bottom:2px solid transparent;
+  transition:all 0.2s ease;
+}
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* Tab Content */
+.tab-content { display:none; flex:1; overflow:hidden; flex-direction:column; }
+.tab-content.active { display:flex; }
+
+/* CHATBOT */
+.chat-messages {
+  flex:1; overflow-y:auto; padding:20px;
+  display:flex; flex-direction:column; gap:14px;
+  scrollbar-width:thin; scrollbar-color:var(--surface3) transparent;
+}
+.msg {
+  display:flex; gap:10px; align-items:flex-start;
+  animation:fadeUp 0.3s ease;
+}
+.msg.user { flex-direction:row-reverse; }
+.msg-avatar {
+  width:30px; height:30px; border-radius:50%;
+  background:var(--surface3); display:flex;
+  align-items:center; justify-content:center;
+  font-size:14px; flex-shrink:0;
+}
+.msg.user .msg-avatar { background:var(--accent-dim); }
+.msg-bubble {
+  max-width:80%; padding:10px 14px; border-radius:12px;
+  font-size:13.5px; line-height:1.55; background:var(--surface2);
+  border:1px solid var(--border);
+}
+.msg.user .msg-bubble {
+  background:var(--accent-dim);
+  border-color:rgba(126,217,143,0.2);
+  color:var(--text);
+}
+
+.chat-suggestions {
+  padding:0 20px 12px;
+  display:flex; flex-wrap:wrap; gap:6px;
+}
+.suggestion-chip {
+  padding:6px 12px; border-radius:20px; font-size:12px;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--muted); cursor:pointer; transition:all 0.2s;
+}
+.suggestion-chip:hover { border-color:var(--accent); color:var(--accent); }
+
+.chat-input-area {
+  padding:16px 20px;
+  border-top:1px solid var(--border);
+  display:flex; gap:10px;
+}
+.chat-input {
+  flex:1; padding:10px 14px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; color:var(--text);
+  font-family:'DM Sans',sans-serif; font-size:13.5px;
+  outline:none; transition:border-color 0.2s;
+  resize:none;
+}
+.chat-input:focus { border-color:rgba(126,217,143,0.3); }
+.chat-input::placeholder { color:var(--muted); }
+.send-btn {
+  width:38px; height:38px; border-radius:10px;
+  background:var(--accent); border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; transition:all 0.2s; flex-shrink:0;
+}
+.send-btn:hover { background:#92E8A3; }
+
+/* SKINCARE PANEL */
+.skincare-panel {
+  flex:1; overflow-y:auto; padding:20px;
+  display:flex; flex-direction:column; gap:16px;
+  scrollbar-width:thin; scrollbar-color:var(--surface3) transparent;
+}
+
+.skincare-card {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px; cursor:pointer;
+  transition:all 0.2s; position:relative; overflow:hidden;
+}
+.skincare-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--accent); border-radius:0 2px 2px 0;
+}
+.skincare-card:hover { border-color:rgba(126,217,143,0.2); background:var(--surface3); }
+.skincare-card-title { font-size:14px; font-weight:600; margin-bottom:6px; }
+.skincare-card-desc { font-size:12.5px; color:var(--muted); line-height:1.5; }
+.skincare-tag { display:inline-block; margin-top:8px; padding:3px 10px; border-radius:20px; font-size:11px; background:var(--accent-dim); color:var(--accent); }
+
+/* REMINDER MODAL */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+  z-index:200; align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:20px; padding:32px; width:400px; max-width:90vw;
+  animation:fadeUp 0.3s ease;
+}
+.modal-title { font-family:'Fraunces',serif; font-size:22px; margin-bottom:6px; }
+.modal-sub { font-size:13px; color:var(--muted); margin-bottom:24px; }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:12px; font-weight:600; color:var(--muted); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px; display:block; }
+.form-input, .form-select {
+  width:100%; padding:10px 14px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; color:var(--text);
+  font-family:'DM Sans',sans-serif; font-size:14px; outline:none;
+}
+.form-input:focus, .form-select:focus { border-color:rgba(126,217,143,0.3); }
+.form-select option { background:var(--surface2); }
+.modal-actions { display:flex; gap:10px; margin-top:24px; }
+.btn-primary {
+  flex:1; padding:12px; background:var(--accent); color:#0A0C0B;
+  border:none; border-radius:10px; font-family:'DM Sans',sans-serif;
+  font-size:14px; font-weight:600; cursor:pointer;
+}
+.btn-secondary {
+  padding:12px 20px; background:transparent;
+  border:1px solid var(--border); border-radius:10px;
+  color:var(--muted); font-family:'DM Sans',sans-serif;
+  font-size:14px; cursor:pointer;
+}
+.btn-secondary:hover { border-color:var(--muted); }
+
+.reminders-list { display:flex; flex-direction:column; gap:8px; }
+.reminder-item {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:12px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.reminder-info { font-size:13px; }
+.reminder-time { font-size:12px; color:var(--muted); margin-top:2px; }
+.reminder-delete { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; }
+.reminder-delete:hover { color:var(--danger); }
+
+.add-reminder-btn {
+  width:100%; padding:12px; background:transparent;
+  border:1.5px dashed rgba(126,217,143,0.25); border-radius:var(--radius);
+  color:var(--accent); font-family:'DM Sans',sans-serif;
+  font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s;
+}
+.add-reminder-btn:hover { background:var(--accent-dim); border-color:rgba(126,217,143,0.4); }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:12px 20px; font-size:13px;
+  transition:transform 0.3s ease; z-index:300; white-space:nowrap;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🔬</div>
+    <div class="logo-name">Derma<span>Scan</span></div>
+  </div>
+  <div class="header-badge">AI Dermatologist · Beta</div>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- LEFT: Upload + Result -->
+  <div class="left-panel">
+    <div>
+      <div class="section-title" style="margin-bottom:14px;">Scan Your Skin</div>
+
+      <!-- Upload -->
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div id="uploadPlaceholder">
+          <div class="upload-icon">🩺</div>
+          <div class="upload-text">Upload a skin photo</div>
+          <div class="upload-sub">JPG, PNG · Clear, well-lit photo works best</div>
+        </div>
+        <img id="previewImg" alt="preview"/>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleUpload(event)">
+      </div>
+    </div>
+
+    <!-- Analyze Button -->
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()" disabled>
+      <span>✦</span> Analyze Skin
+    </button>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <span>Analyzing your skin<span class="loading-dots"></span></span>
+    </div>
+
+    <!-- Result -->
+    <div class="result-card" id="resultCard">
+      <div class="result-header">
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Detected Condition</div>
+          <div class="diagnosis-name" id="diagnosisName">Contact Dermatitis</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px;" id="sciName">Dermatitis contacta</div>
+        </div>
+        <div class="severity-badge severity-moderate" id="severityBadge">Moderate</div>
+      </div>
+
+      <div class="result-body">
+
+        <!-- Confidence -->
+        <div class="result-row">
+          <div class="result-row-icon">📊</div>
+          <div class="result-row-content">
+            <div class="result-row-label">AI Confidence</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+              <div style="flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+                <div id="confidenceBar" style="height:100%;background:var(--accent);border-radius:3px;width:87%;transition:width 1s ease;"></div>
+              </div>
+              <div id="confidenceText" style="font-size:13px;font-weight:600;color:var(--accent);">87%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- What is this -->
+        <div class="result-row">
+          <div class="result-row-icon">💬</div>
+          <div class="result-row-content">
+            <div class="result-row-label">What is this?</div>
+            <div class="result-row-value" id="whatIsThis">A skin reaction caused by direct contact with an irritant or allergen. Your skin is reacting to something it touched — like soap, a plant, or fabric.</div>
+          </div>
+        </div>
+
+        <!-- Is it serious -->
+        <div class="result-row">
+          <div class="result-row-icon">⚠️</div>
+          <div class="result-row-content">
+            <div class="result-row-label">Is it serious?</div>
+            <div class="result-row-value" id="isSerious">Usually not serious. Most cases clear up on their own in 2–4 weeks once you avoid the trigger. But if it spreads or gets worse, see a dermatologist.</div>
+          </div>
+        </div>
+
+        <!-- Causes -->
+        <div class="result-row">
+          <div class="result-row-icon">🔎</div>
+          <div class="result-row-content">
+            <div class="result-row-label">Likely Causes</div>
+            <div class="tags" id="causesTags">
+              <span class="tag">Allergic reaction</span>
+              <span class="tag">Harsh soap/detergent</span>
+              <span class="tag">Plant contact</span>
+              <span class="tag">Synthetic fabric</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Symptoms -->
+        <div class="result-row">
+          <div class="result-row-icon">😣</div>
+          <div class="result-row-content">
+            <div class="result-row-label">Symptoms</div>
+            <div class="tags" id="symptomsTags">
+              <span class="tag">Redness & inflammation</span>
+              <span class="tag">Itching/burning</span>
+              <span class="tag">Dry patches</span>
+              <span class="tag">Skin tenderness</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Home remedies -->
+        <div class="result-row">
+          <div class="result-row-icon">🌿</div>
+          <div class="result-row-content">
+            <div class="result-row-label">Home Remedies</div>
+            <div class="result-row-value" id="homeRemedies">Cool compress to reduce inflammation · Aloe vera gel · Colloidal oatmeal bath · Avoid scratching</div>
+          </div>
+        </div>
+
+        <!-- Medicine -->
+        <div class="result-row">
+          <div class="result-row-icon">💊</div>
+          <div class="result-row-content">
+            <div class="result-row-label">OTC Medicine</div>
+            <div class="result-row-value" id="medicine">Hydrocortisone 1% cream · Calamine lotion · Cetirizine (antihistamine) for itching</div>
+          </div>
+        </div>
+
+        <!-- Ingredients use/avoid -->
+        <div class="result-row">
+          <div class="result-row-icon">✅</div>
+          <div class="result-row-content">
+            <div class="result-row-label">Use These Ingredients</div>
+            <div class="tags">
+              <span class="tag tag-good">Ceramides</span>
+              <span class="tag tag-good">Aloe vera</span>
+              <span class="tag tag-good">Niacinamide</span>
+              <span class="tag tag-good">Hyaluronic acid</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-row">
+          <div class="result-row-icon">❌</div>
+          <div class="result-row-content">
+            <div class="result-row-label">Avoid These</div>
+            <div class="tags">
+              <span class="tag tag-bad">Fragrance</span>
+              <span class="tag tag-bad">Alcohol</span>
+              <span class="tag tag-bad">Retinoids</span>
+              <span class="tag tag-bad">Exfoliants</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Uncertain note -->
+        <div class="uncertain-note" id="uncertainNote">
+          ⚡ <strong>Not 100% certain?</strong> This analysis is based on visual patterns. If you're unsure or symptoms persist beyond 2 weeks, please consult a dermatologist for a confirmed diagnosis.
+        </div>
+
+        <!-- Doctor visit -->
+        <div class="result-row">
+          <div class="result-row-icon">👨‍⚕️</div>
+          <div class="result-row-content">
+            <div class="result-row-label">See a Doctor If...</div>
+            <div class="result-row-value" id="doctorAdvice">Rash spreads rapidly · Signs of infection (pus, fever) · No improvement after 2–3 weeks of home treatment · Severe itching affecting sleep</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <div class="disclaimer-icon">⚕️</div>
+      <div>This AI analysis is for informational purposes only and does not constitute medical advice. Always consult a qualified dermatologist or healthcare professional for diagnosis and treatment of skin conditions.</div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Chat + Skincare -->
+  <div class="right-panel">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('chat', this)">💬 Ask DermAI</div>
+      <div class="tab" onclick="switchTab('skincare', this)">✨ Skin Care</div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="tab-content active" id="tab-chat">
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble">Hi! I'm DermAI 👋 Upload a skin photo on the left and I'll analyze it, or ask me anything about skin conditions!</div>
+        </div>
+      </div>
+
+      <div class="chat-suggestions" id="suggestions">
+        <div class="suggestion-chip" onclick="sendSuggestion(this)">What is this rash?</div>
+        <div class="suggestion-chip" onclick="sendSuggestion(this)">Is it contagious?</div>
+        <div class="suggestion-chip" onclick="sendSuggestion(this)">Do I need a dermat?</div>
+        <div class="suggestion-chip" onclick="sendSuggestion(this)">How long to heal?</div>
+      </div>
+
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chatInput" placeholder="Ask about your skin..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        <button class="send-btn" onclick="sendMessage()">↑</button>
+      </div>
+    </div>
+
+    <!-- SKINCARE TAB -->
+    <div class="tab-content" id="tab-skincare">
+      <div class="skincare-panel">
+
+        <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin-bottom:4px;">Your Skin Routine</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Personalized recommendations for sensitive/reactive skin</div>
+
+        <div class="skincare-card" onclick="showToast('Morning routine expanded!')">
+          <div class="skincare-card-title">☀️ Morning Routine</div>
+          <div class="skincare-card-desc">Gentle cleanser → Niacinamide serum → Lightweight moisturizer → SPF 50 sunscreen. Keep it simple when your skin is reactive.</div>
+          <span class="skincare-tag">5 steps · 8 mins</span>
+        </div>
+
+        <div class="skincare-card" onclick="showToast('Evening routine expanded!')">
+          <div class="skincare-card-title">🌙 Evening Routine</div>
+          <div class="skincare-card-desc">Micellar water → Gentle cleanser → Ceramide-rich moisturizer. Skip actives until your skin heals. Focus on barrier repair.</div>
+          <span class="skincare-tag">3 steps · 5 mins</span>
+        </div>
+
+        <div class="skincare-card" onclick="showToast('Ingredients list opened!')">
+          <div class="skincare-card-title">🛒 Recommended Products</div>
+          <div class="skincare-card-desc">CeraVe Hydrating Cleanser · The Ordinary Niacinamide 10% · Vanicream Moisturizer · La Roche-Posay SPF 50</div>
+          <span class="skincare-tag">Budget-friendly picks</span>
+        </div>
+
+        <div class="skincare-card" onclick="showToast('Dietary tips opened!')">
+          <div class="skincare-card-title">🥗 Diet & Lifestyle Tips</div>
+          <div class="skincare-card-desc">Avoid dairy and high-sugar foods during flare-ups. Omega-3 rich foods (fish, flaxseed) help reduce inflammation. Stay hydrated.</div>
+          <span class="skincare-tag">Anti-inflammatory</span>
+        </div>
+
+        <div class="skincare-card" onclick="showToast('Ingredients guide opened!')">
+          <div class="skincare-card-title">⚗️ Ingredients to Avoid</div>
+          <div class="skincare-card-desc">Fragrance, alcohol denat, essential oils, SLS, retinoids, AHA/BHA — all can worsen reactive skin during flare-ups.</div>
+          <span class="skincare-tag">Important</span>
+        </div>
+
+        <!-- Reminders -->
+        <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-top:8px;margin-bottom:4px;">⏰ Reminders</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">Set reminders for your skincare routine</div>
+
+        <div class="reminders-list" id="remindersList"></div>
+
+        <button class="add-reminder-btn" onclick="document.getElementById('reminderModal').classList.add('open')">
+          + Add Skincare Reminder
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- REMINDER MODAL -->
+<div class="modal-overlay" id="reminderModal">
+  <div class="modal">
+    <div class="modal-title">Set a Reminder</div>
+    <div class="modal-sub">Never miss your skincare routine</div>
+
+    <div class="form-group">
+      <label class="form-label">Routine</label>
+      <select class="form-select" id="reminderType">
+        <option>Morning Routine</option>
+        <option>Evening Routine</option>
+        <option>Apply Medicine</option>
+        <option>Drink Water</option>
+        <option>Apply Sunscreen</option>
+        <option>Custom</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Time</label>
+      <input type="time" class="form-input" id="reminderTime" value="08:00">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Frequency</label>
+      <select class="form-select" id="reminderFreq">
+        <option>Every day</option>
+        <option>Weekdays only</option>
+        <option>Every 2 days</option>
+        <option>Weekly</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="document.getElementById('reminderModal').classList.remove('open')">Cancel</button>
+      <button class="btn-primary" onclick="saveReminder()">Save Reminder ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- HARDCODED RESPONSES ----
+const chatResponses = {
+  "what is this rash": "Based on the image analysis, this appears to be **Contact Dermatitis** — a skin reaction from touching an irritant or allergen. It's very common and usually not dangerous. Your skin is basically saying 'I don't like what touched me!' 😅",
+  "is it contagious": "No, Contact Dermatitis is **not contagious** at all! You can't spread it to others through touch. It's purely your skin's reaction to a specific trigger, not an infection.",
+  "do i need a dermat": "For mild cases, you can manage it at home with hydrocortisone cream and by avoiding the trigger. But if it **spreads, doesn't improve in 2 weeks, or you get a fever**, definitely see a dermatologist. Better safe than sorry!",
+  "how long to heal": "Most cases of Contact Dermatitis clear up in **2 to 4 weeks** once you avoid the trigger and use appropriate treatment. Keeping the area moisturized and avoiding scratching will speed up healing!",
+  "default": "Great question! Based on the skin analysis, I can see signs of an inflammatory skin reaction. Try to identify what triggered it — new soap, detergent, plant contact, or fabric? Avoiding the trigger is step 1. Would you like specific product recommendations?"
+};
+
+const diagnosisData = {
+  name: "Contact Dermatitis",
+  sciName: "Dermatitis contacta · Eczematous reaction",
+  severity: "moderate",
+  confidence: 87,
+  whatIsThis: "A skin reaction caused by direct contact with an irritant or allergen. Your skin is reacting to something it touched — like a harsh soap, a plant, or synthetic fabric.",
+  isSerious: "Usually not serious. Most cases resolve in 2–4 weeks once you avoid the trigger. However, if it spreads rapidly or shows signs of infection, see a dermatologist.",
+  homeRemedies: "Cool compress (15 mins, 3x daily) · Pure aloe vera gel · Colloidal oatmeal bath · Keep area clean and dry · Avoid scratching",
+  medicine: "Hydrocortisone 1% cream (twice daily) · Calamine lotion for itch · Cetirizine 10mg antihistamine · Avoid steroid creams for more than 1 week",
+  doctorAdvice: "Rash spreads beyond original area · Signs of infection (yellow/green pus, fever) · No improvement after 3 weeks · Rash near eyes or mouth"
+};
+
+// Upload handling
+function handleUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = document.getElementById('previewImg');
+    const placeholder = document.getElementById('uploadPlaceholder');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+    document.getElementById('uploadZone').classList.add('has-image');
+    document.getElementById('analyzeBtn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag and drop
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = 'var(--accent)'; });
+uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault(); uploadZone.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    document.getElementById('fileInput').files = e.dataTransfer.files;
+    handleUpload({ target: { files: [file] } });
+  }
+});
+
+// Analyze
+function analyzeImage() {
+  document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('resultCard').style.display = 'none';
+
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('analyzeBtn').style.display = 'flex';
+    showResult();
+  }, 2200);
+}
+
+function showResult() {
+  const d = diagnosisData;
+  document.getElementById('diagnosisName').textContent = d.name;
+  document.getElementById('sciName').textContent = d.sciName;
+  document.getElementById('confidenceBar').style.width = d.confidence + '%';
+  document.getElementById('confidenceText').textContent = d.confidence + '%';
+  document.getElementById('whatIsThis').textContent = d.whatIsThis;
+  document.getElementById('isSerious').textContent = d.isSerious;
+  document.getElementById('homeRemedies').textContent = d.homeRemedies;
+  document.getElementById('medicine').textContent = d.medicine;
+  document.getElementById('doctorAdvice').textContent = d.doctorAdvice;
+
+  const badge = document.getElementById('severityBadge');
+  badge.textContent = d.severity.charAt(0).toUpperCase() + d.severity.slice(1);
+  badge.className = 'severity-badge severity-' + d.severity;
+
+  document.getElementById('resultCard').style.display = 'block';
+  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Auto message in chat
+  addBotMessage("✅ Analysis complete! I detected **" + d.name + "** with " + d.confidence + "% confidence. Check the full report on the left. Want to know more about it?");
+}
+
+// CHAT
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function sendSuggestion(el) {
+  const text = el.textContent;
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  addUserMessage(text);
+  input.value = '';
+  input.style.height = 'auto';
+
+  setTimeout(() => {
+    const key = text.toLowerCase();
+    let response = chatResponses.default;
+    for (const [k, v] of Object.entries(chatResponses)) {
+      if (key.includes(k)) { response = v; break; }
+    }
+    addBotMessage(response);
+  }, 800);
+}
+
+function addUserMessage(text) {
+  const chat = document.getElementById('chatMessages');
+  chat.innerHTML += `<div class="msg user"><div class="msg-avatar">👤</div><div class="msg-bubble">${text}</div></div>`;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addBotMessage(text) {
+  const chat = document.getElementById('chatMessages');
+  chat.innerHTML += `<div class="msg"><div class="msg-avatar">🤖</div><div class="msg-bubble">${text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div></div>`;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// REMINDERS
+let reminders = [];
+
+function saveReminder() {
+  const type = document.getElementById('reminderType').value;
+  const time = document.getElementById('reminderTime').value;
+  const freq = document.getElementById('reminderFreq').value;
+  reminders.push({ type, time, freq, id: Date.now() });
+  renderReminders();
+  document.getElementById('reminderModal').classList.remove('open');
+  showToast('✓ Reminder set for ' + time);
+}
+
+function renderReminders() {
+  const list = document.getElementById('remindersList');
+  if (reminders.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = reminders.map(r => `
+    <div class="reminder-item">
+      <div>
+        <div class="reminder-info">⏰ ${r.type}</div>
+        <div class="reminder-time">${r.time} · ${r.freq}</div>
+      </div>
+      <button class="reminder-delete" onclick="deleteReminder(${r.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+function deleteReminder(id) {
+  reminders = reminders.filter(r => r.id !== id);
+  renderReminders();
+  showToast('Reminder removed');
+}
+
+// TOAST
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('reminderModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+</script>
+</body>
+</html>
