@@ -1,87 +1,122 @@
-import gradio as gr
-from transformers import pipeline
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 from groq import Groq
+from transformers import pipeline
+from dotenv import load_dotenv
 from PIL import Image
-import io
-import base64
+import io, base64, os, json, re
 
-# Groq Client
-client = Groq(api_key="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")
+load_dotenv()
+app = Flask(__name__)
+CORS(app)
 
-print("⏳ DinoV2 Model load ho raha hai...")
-model = pipeline(
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+print("⏳ DinoV2 loading...")
+classifier = pipeline(
     "image-classification",
     model="Jayanth2002/dinov2-base-finetuned-SkinDisease"
 )
-print("✅ Model ready!")
+print("✅ Ready!")
 
-def analyze(image):
-    # Step 1 - DinoV2
-    dino_results = model(image)
-    top = dino_results[0]
-    
-    # Step 2 - Image to base64 for Groq
-    img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format='JPEG')
-    img_base64 = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+# ─────────────────────────────────────────
+# PAGES
+# ─────────────────────────────────────────
 
-    prompt = f"""You are an expert AI dermatologist. Analyze this skin image carefully.
-    
-Initial AI scan detected: {top['label']} with {top['score']*100:.1f}% confidence.
+@app.route('/')
+def index():
+    return send_from_directory('.', 'dermascan.html')
 
-Give a detailed dermatology report:
-1. 🔍 DIAGNOSIS - Exact skin condition
-2. 📊 TYPE - Specific type/variant
-3. ⚠️ SEVERITY - Mild/Moderate/Severe and why
-4. 🔎 ROOT CAUSE - Oily/hormonal/bacterial/fungal/allergic?
-5. 😣 SYMPTOMS - What patient might feel
-6. 💊 TREATMENT - Home remedies + OTC creams + Prescription
-7. ✅ INGREDIENTS TO USE - Helpful skincare ingredients
-8. ❌ INGREDIENTS TO AVOID - What makes it worse
-9. 👨‍⚕️ DOCTOR VISIT - When to see dermatologist
-10. 🛡️ PREVENTION - How to prevent recurrence
+@app.route('/history')
+def history():
+    return send_from_directory('.', 'history.html')
 
-Be specific, accurate and helpful."""
+@app.route('/find-dermat')
+def find_dermat():
+    return send_from_directory('.', 'find-dermat.html')
+
+# ─────────────────────────────────────────
+# ANALYZE
+# ─────────────────────────────────────────
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    file = request.files['image']
+    image = Image.open(file.stream).convert('RGB')
+
+    # DinoV2 scan
+    dino = classifier(image)
+    top = dino[0]
+
+    # Encode image for Groq vision
+    buf = io.BytesIO()
+    image.save(buf, format='JPEG')
+    img_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    prompt = f"""You are an expert AI dermatologist. Analyze this skin image.
+Initial scan: {top['label']} ({top['score']*100:.1f}% confidence)
+
+Return ONLY a JSON object like this (no extra text):
+{{
+  "diagnosis": "Common name of condition",
+  "scientific_name": "Scientific/medical name",
+  "severity": "mild|moderate|severe",
+  "confidence": {top['score']*100:.0f},
+  "what_is_this": "Simple 2 sentence explanation for patient",
+  "is_serious": "Is it serious? What should patient know?",
+  "causes": ["cause1", "cause2", "cause3"],
+  "symptoms": ["symptom1", "symptom2", "symptom3"],
+  "home_remedies": "Home remedy instructions",
+  "medicine": "OTC medicine recommendations",
+  "ingredients_use": ["ing1", "ing2", "ing3"],
+  "ingredients_avoid": ["ing1", "ing2", "ing3"],
+  "doctor_advice": "When to see a doctor",
+  "prevention": "Prevention tips",
+  "uncertain": true
+}}"""
 
     response = client.chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{img_base64}"
-                        }
-                    },
-                    {
-                        "type": "text",
-                        "text": prompt
-                    }
-                ]
-            }
-        ],
-        max_tokens=1500
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}},
+                {"type": "text", "text": prompt}
+            ]
+        }],
+        max_tokens=1000
     )
-    
-    output = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-    output += "⚡ QUICK SCAN (DinoV2 96.48%)\n"
-    output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-    for i, r in enumerate(dino_results[:3]):
-        output += f"{i+1}. {r['label']} — {r['score']*100:.1f}%\n"
-    
-    output += "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-    output += "🧠 DEEP AI ANALYSIS (Llama 4)\n"
-    output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-    output += response.choices[0].message.content
-    
-    return output
 
-gr.Interface(
-    fn=analyze,
-    inputs=gr.Image(type="pil", label="📸 Skin Image Upload karo"),
-    outputs=gr.Textbox(label="🩺 Full Diagnosis Report", lines=35),
-    title="🩺 DermAI — AI Dermatologist",
-    description="DinoV2 (96.48%) + Llama 4 Vision | 200+ skin conditions"
-).launch()
+    text = response.choices[0].message.content
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if match:
+        result = json.loads(match.group())
+    else:
+        result = {
+            "diagnosis": top['label'],
+            "confidence": top['score'] * 100,
+            "error": "Parse error"
+        }
+
+    return jsonify(result)
+
+# ─────────────────────────────────────────
+# CHAT
+# ─────────────────────────────────────────
+
+from chatbot import chat
+
+@app.route('/chat', methods=['POST'])
+def chat_endpoint():
+    data = request.json
+    message = data.get('message', '')
+    session_id = data.get('session_id', 'default')
+    diagnosis = data.get('diagnosis', None)
+
+    reply = chat(message, session_id, diagnosis)
+    return jsonify({"reply": reply})
+
+# ─────────────────────────────────────────
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

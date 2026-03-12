@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DermaScan — Skin History</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0A0C0B; --surface:#131513; --surface2:#1A1D1A; --surface3:#212421;
+  --border:rgba(255,255,255,0.07); --accent:#7ED98F; --accent-dim:rgba(126,217,143,0.12);
+  --warn:#F4C97A; --danger:#F07070; --text:#EDEEED; --muted:#6B7A6D; --radius:14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+body::before {
+  content:''; position:fixed; inset:0;
+  background:radial-gradient(ellipse 60% 40% at 15% 10%, rgba(126,217,143,0.05) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
+}
+
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 40px; border-bottom:1px solid var(--border);
+  background:rgba(10,12,11,0.9); backdrop-filter:blur(20px);
+  position:sticky; top:0; z-index:100;
+}
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-icon { width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:18px; }
+.logo-name { font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--text); }
+.logo-name span { color:var(--accent); }
+.nav-links { display:flex; gap:8px; }
+.nav-link {
+  padding:8px 16px; border-radius:10px; font-size:13px; font-weight:500;
+  text-decoration:none; color:var(--muted); border:1px solid transparent; transition:all 0.2s;
+}
+.nav-link:hover { color:var(--text); border-color:var(--border); }
+.nav-link.active { color:var(--accent); background:var(--accent-dim); border-color:rgba(126,217,143,0.2); }
+
+.page { max-width:1000px; margin:0 auto; padding:40px; position:relative; z-index:1; }
+
+/* Stats Row */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:32px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; }
+.stat-value { font-family:'Fraunces',serif; font-size:28px; font-weight:600; color:var(--accent); margin-bottom:4px; }
+.stat-label { font-size:12px; color:var(--muted); font-weight:500; }
+
+/* Toolbar */
+.toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px; }
+.toolbar-left { display:flex; gap:8px; flex-wrap:wrap; }
+.filter-btn {
+  padding:8px 14px; border-radius:20px; font-size:12px; font-weight:600;
+  background:var(--surface2); border:1px solid var(--border); color:var(--muted);
+  cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif;
+}
+.filter-btn.active { background:var(--accent-dim); border-color:rgba(126,217,143,0.3); color:var(--accent); }
+.search-box {
+  padding:9px 14px; background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif;
+  font-size:13px; outline:none; width:220px;
+}
+.search-box:focus { border-color:rgba(126,217,143,0.3); }
+.search-box::placeholder { color:var(--muted); }
+
+/* History Grid */
+.history-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+
+.scan-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  overflow:hidden; transition:all 0.2s; cursor:pointer; animation:fadeUp 0.4s ease;
+}
+.scan-card:hover { border-color:rgba(126,217,143,0.2); transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+.scan-img { width:100%; height:160px; object-fit:cover; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:40px; }
+.scan-img img { width:100%; height:100%; object-fit:cover; }
+.scan-body { padding:14px 16px; }
+.scan-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; }
+.scan-diagnosis { font-size:15px; font-weight:600; font-family:'Fraunces',serif; }
+.scan-date { font-size:11px; color:var(--muted); margin-top:2px; }
+.severity-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+.dot-mild { background:#7ED98F; }
+.dot-moderate { background:#F4C97A; }
+.dot-severe { background:#F07070; }
+.scan-confidence { font-size:12px; color:var(--muted); margin-bottom:8px; }
+.scan-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+.scan-tag { padding:2px 8px; border-radius:10px; font-size:11px; background:var(--surface3); color:var(--muted); border:1px solid var(--border); }
+.scan-actions { display:flex; gap:6px; }
+.scan-btn {
+  flex:1; padding:8px; border-radius:8px; font-size:12px; font-weight:500;
+  cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; border:none;
+}
+.scan-btn-primary { background:var(--accent-dim); color:var(--accent); }
+.scan-btn-primary:hover { background:rgba(126,217,143,0.2); }
+.scan-btn-danger { background:rgba(240,112,112,0.08); color:var(--danger); }
+.scan-btn-danger:hover { background:rgba(240,112,112,0.15); }
+
+/* Empty State */
+.empty-state { text-align:center; padding:80px 20px; }
+.empty-icon { font-size:48px; margin-bottom:16px; }
+.empty-title { font-family:'Fraunces',serif; font-size:24px; font-weight:600; margin-bottom:8px; }
+.empty-sub { font-size:14px; color:var(--muted); margin-bottom:24px; }
+.empty-btn { display:inline-flex; align-items:center; gap:8px; padding:12px 24px; background:var(--accent); color:#0A0C0B; border-radius:10px; text-decoration:none; font-weight:600; font-size:14px; }
+
+/* Progress Chart */
+.progress-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
+.progress-title { font-family:'Fraunces',serif; font-size:18px; font-weight:600; margin-bottom:4px; }
+.progress-sub { font-size:13px; color:var(--muted); margin-bottom:20px; }
+.chart-container { position:relative; height:120px; display:flex; align-items:flex-end; gap:8px; }
+.chart-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.chart-bar { width:100%; border-radius:4px 4px 0 0; transition:height 0.8s ease; min-height:4px; }
+.chart-label { font-size:10px; color:var(--muted); text-align:center; }
+.chart-val { font-size:11px; font-weight:600; color:var(--text); }
+
+/* Detail Modal */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:200; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal-box { background:var(--surface); border:1px solid var(--border); border-radius:20px; width:580px; max-width:92vw; max-height:88vh; overflow-y:auto; animation:fadeUp 0.3s ease; }
+.modal-img { width:100%; height:220px; object-fit:cover; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:60px; }
+.modal-img img { width:100%; height:100%; object-fit:cover; }
+.modal-content { padding:24px; }
+.modal-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
+.modal-title { font-family:'Fraunces',serif; font-size:22px; font-weight:600; }
+.modal-sci { font-size:13px; color:var(--muted); margin-top:3px; }
+.modal-close { background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; }
+.detail-row { display:flex; gap:12px; margin-bottom:14px; }
+.detail-icon { width:32px; height:32px; border-radius:8px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.detail-label { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:3px; }
+.detail-value { font-size:14px; line-height:1.5; }
+
+/* Toast */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px 20px; font-size:13px; transition:transform 0.3s ease; z-index:300; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">
+    <div class="logo-icon">🔬</div>
+    <div class="logo-name">Derma<span>Scan</span></div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="/">🩺 Scan</a>
+    <a class="nav-link active" href="/history">📋 History</a>
+    <a class="nav-link" href="/find-dermat">📍 Find Dermat</a>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value" id="totalScans">0</div>
+      <div class="stat-label">Total Scans</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="uniqueConditions">0</div>
+      <div class="stat-label">Conditions Detected</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="avgConfidence">—</div>
+      <div class="stat-label">Avg. AI Confidence</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="lastScan">—</div>
+      <div class="stat-label">Last Scan</div>
+    </div>
+  </div>
+
+  <!-- Progress Chart -->
+  <div class="progress-section" id="progressSection" style="display:none;">
+    <div class="progress-title">📈 Scan Activity</div>
+    <div class="progress-sub">Your scanning history over time</div>
+    <div class="chart-container" id="chart"></div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button class="filter-btn active" onclick="filterScans('all', this)">All</button>
+      <button class="filter-btn" onclick="filterScans('mild', this)">🟢 Mild</button>
+      <button class="filter-btn" onclick="filterScans('moderate', this)">🟡 Moderate</button>
+      <button class="filter-btn" onclick="filterScans('severe', this)">🔴 Severe</button>
+    </div>
+    <input class="search-box" placeholder="🔍 Search condition..." oninput="searchScans(this.value)">
+  </div>
+
+  <!-- Grid -->
+  <div class="history-grid" id="historyGrid"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <div class="empty-icon">🩺</div>
+    <div class="empty-title">No scans yet</div>
+    <div class="empty-sub">Start by scanning your skin — your history will appear here</div>
+    <a class="empty-btn" href="/">✦ Start First Scan</a>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <div class="modal-img" id="modalImg">🩺</div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle">—</div>
+          <div class="modal-sci" id="modalSci">—</div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('detailModal').classList.remove('open')">✕</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Load history from localStorage
+let allScans = JSON.parse(localStorage.getItem('dermascans') || '[]');
+let filtered = [...allScans];
+
+// Demo data if empty
+if (allScans.length === 0) {
+  allScans = [
+    {
+      id: 1, date: new Date(Date.now() - 7*24*60*60*1000).toISOString(),
+      diagnosis: 'Contact Dermatitis', scientific_name: 'Dermatitis contacta',
+      severity: 'moderate', confidence: 87,
+      what_is_this: 'A skin reaction from contact with an irritant or allergen.',
+      is_serious: 'Usually not serious. Clears up in 2-4 weeks.',
+      causes: ['Allergic reaction', 'Harsh soap', 'Synthetic fabric'],
+      symptoms: ['Redness', 'Itching', 'Dry patches'],
+      home_remedies: 'Cool compress, aloe vera gel, avoid scratching',
+      medicine: 'Hydrocortisone 1%, Cetirizine 10mg',
+      doctor_advice: 'See doctor if spreads or no improvement in 3 weeks',
+      prevention: 'Identify and avoid triggers',
+      imgPlaceholder: '🔴',
+    },
+    {
+      id: 2, date: new Date(Date.now() - 3*24*60*60*1000).toISOString(),
+      diagnosis: 'Acne Vulgaris', scientific_name: 'Acne vulgaris',
+      severity: 'mild', confidence: 92,
+      what_is_this: 'Clogged pores from excess oil, dead skin, and bacteria.',
+      is_serious: 'Not serious but can cause scarring if untreated.',
+      causes: ['Excess sebum', 'Hormonal changes', 'Bacteria (C. acnes)'],
+      symptoms: ['Pimples', 'Blackheads', 'Inflammation'],
+      home_remedies: 'Salicylic acid wash, avoid touching face, change pillowcase',
+      medicine: 'Benzoyl Peroxide 2.5%, Niacinamide 10%',
+      doctor_advice: 'See dermat if cystic or not improving in 6 weeks',
+      prevention: 'Consistent routine, non-comedogenic products',
+      imgPlaceholder: '🟡',
+    }
+  ];
+  localStorage.setItem('dermascans', JSON.stringify(allScans));
+  filtered = [...allScans];
+}
+
+renderAll();
+
+function renderAll() {
+  updateStats();
+  renderChart();
+  renderGrid(filtered);
+}
+
+function updateStats() {
+  document.getElementById('totalScans').textContent = allScans.length;
+  const unique = new Set(allScans.map(s => s.diagnosis)).size;
+  document.getElementById('uniqueConditions').textContent = unique;
+  if (allScans.length > 0) {
+    const avg = Math.round(allScans.reduce((a,s) => a + (s.confidence||0), 0) / allScans.length);
+    document.getElementById('avgConfidence').textContent = avg + '%';
+    const last = new Date(allScans[allScans.length-1].date);
+    const diff = Math.floor((Date.now() - last) / (1000*60*60*24));
+    document.getElementById('lastScan').textContent = diff === 0 ? 'Today' : diff + 'd ago';
+  }
+}
+
+function renderChart() {
+  if (allScans.length < 2) return;
+  document.getElementById('progressSection').style.display = 'block';
+  const last7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const label = d.toLocaleDateString('en',{weekday:'short'});
+    const count = allScans.filter(s => {
+      const sd = new Date(s.date);
+      return sd.toDateString() === d.toDateString();
+    }).length;
+    last7.push({ label, count });
+  }
+  const max = Math.max(...last7.map(d=>d.count), 1);
+  document.getElementById('chart').innerHTML = last7.map(d => `
+    <div class="chart-bar-wrap">
+      <div class="chart-val">${d.count||''}</div>
+      <div class="chart-bar" style="height:${Math.max((d.count/max)*100,4)}px;background:${d.count>0?'var(--accent)':'var(--surface3)'}"></div>
+      <div class="chart-label">${d.label}</div>
+    </div>`).join('');
+}
+
+function renderGrid(scans) {
+  const grid = document.getElementById('historyGrid');
+  const empty = document.getElementById('emptyState');
+  if (scans.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = scans.slice().reverse().map(s => `
+    <div class="scan-card" onclick="openDetail(${s.id})">
+      <div class="scan-img">
+        ${s.imgData ? `<img src="${s.imgData}" alt="scan"/>` : `<span style="font-size:40px">${s.imgPlaceholder||'🩺'}</span>`}
+      </div>
+      <div class="scan-body">
+        <div class="scan-top">
+          <div>
+            <div class="scan-diagnosis">${s.diagnosis}</div>
+            <div class="scan-date">${formatDate(s.date)}</div>
+          </div>
+          <div class="severity-dot dot-${s.severity||'moderate'}"></div>
+        </div>
+        <div class="scan-confidence">AI Confidence: <strong style="color:var(--accent)">${s.confidence||0}%</strong> · <span style="text-transform:capitalize">${s.severity||'—'}</span></div>
+        <div class="scan-tags">
+          ${(s.causes||[]).slice(0,2).map(c=>`<span class="scan-tag">${c}</span>`).join('')}
+        </div>
+        <div class="scan-actions">
+          <button class="scan-btn scan-btn-primary" onclick="event.stopPropagation();openDetail(${s.id})">View Details</button>
+          <button class="scan-btn scan-btn-danger" onclick="event.stopPropagation();deleteScan(${s.id})">Delete</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openDetail(id) {
+  const s = allScans.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('modalImg').innerHTML = s.imgData
+    ? `<img src="${s.imgData}" alt="scan"/>`
+    : `<span style="font-size:60px">${s.imgPlaceholder||'🩺'}</span>`;
+  document.getElementById('modalTitle').textContent = s.diagnosis;
+  document.getElementById('modalSci').textContent = s.scientific_name || '';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="detail-row"><div class="detail-icon">📅</div><div><div class="detail-label">Scan Date</div><div class="detail-value">${formatDate(s.date)}</div></div></div>
+    <div class="detail-row"><div class="detail-icon">📊</div><div><div class="detail-label">Confidence · Severity</div><div class="detail-value">${s.confidence}% · <span style="text-transform:capitalize">${s.severity}</span></div></div></div>
+    <div class="detail-row"><div class="detail-icon">💬</div><div><div class="detail-label">What is this?</div><div class="detail-value">${s.what_is_this||'—'}</div></div></div>
+    <div class="detail-row"><div class="detail-icon">⚠️</div><div><div class="detail-label">Is it serious?</div><div class="detail-value">${s.is_serious||'—'}</div></div></div>
+    <div class="detail-row"><div class="detail-icon">🌿</div><div><div class="detail-label">Home Remedies</div><div class="detail-value">${s.home_remedies||'—'}</div></div></div>
+    <div class="detail-row"><div class="detail-icon">💊</div><div><div class="detail-label">Medicine</div><div class="detail-value">${s.medicine||'—'}</div></div></div>
+    <div class="detail-row"><div class="detail-icon">👨‍⚕️</div><div><div class="detail-label">Doctor Advice</div><div class="detail-value">${s.doctor_advice||'—'}</div></div></div>
+  `;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function deleteScan(id) {
+  allScans = allScans.filter(s => s.id !== id);
+  filtered = filtered.filter(s => s.id !== id);
+  localStorage.setItem('dermascans', JSON.stringify(allScans));
+  renderAll();
+  showToast('Scan deleted');
+}
+
+function filterScans(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filtered = type === 'all' ? [...allScans] : allScans.filter(s => s.severity === type);
+  renderGrid(filtered);
+}
+
+function searchScans(query) {
+  const q = query.toLowerCase();
+  filtered = allScans.filter(s =>
+    s.diagnosis.toLowerCase().includes(q) ||
+    (s.scientific_name||'').toLowerCase().includes(q) ||
+    (s.causes||[]).some(c => c.toLowerCase().includes(q))
+  );
+  renderGrid(filtered);
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+document.getElementById('detailModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+</script>
+</body>
+</html>
