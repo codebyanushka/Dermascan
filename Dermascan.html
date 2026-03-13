@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DermaScan — AI Dermatologist</title>
+<title>DermaCam — AI Dermatologist</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -365,12 +365,12 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 <header>
   <div class="logo">
     <div class="logo-icon">🔬</div>
-    <div class="logo-name">Derma<span>Scan</span></div>
+    <div class="logo-name">Derma<span>Cam</span></div>
   </div>
   <div style="display:flex;align-items:center;gap:8px;">
     <a href="/history" style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:500;text-decoration:none;color:var(--muted);border:1px solid transparent;transition:all 0.2s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">📋 History</a>
     <a href="/find-dermat" style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:500;text-decoration:none;color:var(--muted);border:1px solid transparent;transition:all 0.2s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">📍 Find Dermat</a>
-    <div class="header-badge">AI Dermatologist </div>
+    <div class="header-badge">AI Dermatologist · Powered by Llama 4</div>
   </div>
 </header>
 
@@ -918,7 +918,7 @@ async function analyzeImage() {
   const formData = new FormData();
   formData.append('image', fileInput.files[0]);
   try {
-    const response = await fetch('http://localhost:5000/analyze', { method:'POST', body:formData });
+    const response = await fetch('/analyze', { method:'POST', body:formData });
     const d = await response.json();
     document.getElementById('loading').style.display = 'none';
     document.getElementById('analyzeBtn').style.display = 'flex';
@@ -1068,7 +1068,7 @@ async function sendMessage() {
   chat.innerHTML += `<div class="msg" id="${typingId}"><div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>`;
   chat.scrollTop = chat.scrollHeight;
   try {
-    const res = await fetch('http://localhost:5000/chat', {
+    const res = await fetch('/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ message:text, session_id:SESSION_ID, diagnosis: currentDiagnosis ? JSON.stringify(currentDiagnosis) : null })
     });
@@ -1131,7 +1131,7 @@ function saveReminder() {
         const [h,m] = time.split(':');
         const target = new Date(); target.setHours(parseInt(h), parseInt(m), 0, 0);
         if (target < new Date()) target.setDate(target.getDate()+1);
-        setTimeout(() => new Notification('DermaScan 🔔', { body:`Time for your ${type}!` }), target - new Date());
+        setTimeout(() => new Notification('DermaCam 🔔', { body:`Time for your ${type}!` }), target - new Date());
       }
     });
   }
