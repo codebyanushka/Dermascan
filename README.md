@@ -1,7 +1,7 @@
 # DermaCam 🔬
 ### AI-Powered Dermatologist — Hackathon Project
 
-© 2026 Anushka Tiwari. All Rights Reserved.
+© 2026 . All Rights Reserved.
 This project was built for a hackathon. Do not copy or redistribute without permission.
 
 ## What it does
@@ -14,5 +14,4 @@ This project was built for a hackathon. Do not copy or redistribute without perm
 ## Tech Stack
 DinoV2 · Llama 4 Vision · Groq · Flask · WebRTC · HuggingFace
 
-## Built by
-Anushka Tiwari
+
