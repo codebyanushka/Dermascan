@@ -76,6 +76,15 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .analyze-btn:hover { background:#92E8A3; transform:translateY(-1px); }
 .analyze-btn:disabled { background:var(--surface3); color:var(--muted); cursor:not-allowed; transform:none; }
 
+.refresh-btn {
+  width:100%; padding:13px; background:transparent;
+  border:1.5px solid var(--border); border-radius:var(--radius);
+  color:var(--muted); font-family:'DM Sans',sans-serif;
+  font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s;
+  display:none; align-items:center; justify-content:center; gap:8px;
+}
+.refresh-btn:hover { border-color:rgba(126,217,143,0.4); color:var(--accent); background:var(--accent-dim); }
+
 .loading { display:none; text-align:center; padding:20px; color:var(--muted); font-size:14px; }
 .spinner { width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px; }
 @keyframes spin { to { transform:rotate(360deg); } }
@@ -130,12 +139,8 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .send-btn { width:38px; height:38px; border-radius:10px; background:var(--accent); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; flex-shrink:0; color:#0A0C0B; font-weight:bold; }
 .send-btn:hover { background:#92E8A3; }
 
-/* ===================== */
-/* SKINCARE PANEL — NEW  */
-/* ===================== */
+/* SKINCARE PANEL */
 .skincare-panel { flex:1; overflow-y:auto; padding:0; display:flex; flex-direction:column; scrollbar-width:thin; scrollbar-color:var(--surface3) transparent; }
-
-/* Personalized Banner */
 .personalized-banner {
   margin:16px 16px 0;
   background:linear-gradient(135deg, rgba(126,217,143,0.15) 0%, rgba(126,217,143,0.05) 100%);
@@ -146,11 +151,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .personalized-banner-icon { font-size:24px; flex-shrink:0; }
 .personalized-banner-title { font-size:13px; font-weight:600; color:var(--accent); margin-bottom:2px; }
 .personalized-banner-sub { font-size:12px; color:var(--muted); }
-
-/* Time Toggle */
-.time-toggle {
-  display:flex; gap:8px; padding:16px 16px 0;
-}
+.time-toggle { display:flex; gap:8px; padding:16px 16px 0; }
 .time-btn {
   flex:1; padding:10px 8px;
   background:var(--surface2); border:1px solid var(--border);
@@ -162,17 +163,10 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .time-btn.active.evening { background:rgba(155,143,232,0.12); border-color:rgba(155,143,232,0.3); color:var(--evening); }
 .time-btn.active.weekly { background:rgba(126,200,217,0.12); border-color:rgba(126,200,217,0.3); color:var(--weekly); }
 .time-btn:hover:not(.active) { border-color:rgba(255,255,255,0.15); color:var(--text); }
-
-/* Routine View */
 .routine-view { display:none; flex-direction:column; padding:16px; gap:0; animation:fadeUp 0.3s ease; }
 .routine-view.active { display:flex; }
-
 .routine-header { margin-bottom:20px; }
-.routine-time-badge {
-  display:inline-flex; align-items:center; gap:6px;
-  padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600;
-  letter-spacing:0.5px; margin-bottom:8px;
-}
+.routine-time-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:0.5px; margin-bottom:8px; }
 .routine-time-badge.morning-badge { background:rgba(244,201,122,0.12); color:var(--morning); }
 .routine-time-badge.evening-badge { background:rgba(155,143,232,0.12); color:var(--evening); }
 .routine-time-badge.weekly-badge { background:rgba(126,200,217,0.12); color:var(--weekly); }
@@ -182,53 +176,32 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .weekly-dot { background:var(--weekly); }
 .routine-title { font-family:'Fraunces',serif; font-size:20px; font-weight:600; margin-bottom:3px; }
 .routine-sub { font-size:12.5px; color:var(--muted); }
-
-/* Timeline Steps */
 .steps-timeline { display:flex; flex-direction:column; }
-.step-item {
-  display:flex; gap:14px; position:relative;
-  padding-bottom:20px;
-}
+.step-item { display:flex; gap:14px; position:relative; padding-bottom:20px; }
 .step-item:last-child { padding-bottom:0; }
 .step-left { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
-.step-number {
-  width:32px; height:32px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700; flex-shrink:0;
-  position:relative; z-index:1;
-}
+.step-number { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; position:relative; z-index:1; }
 .step-number.morning-num { background:rgba(244,201,122,0.15); color:var(--morning); border:1px solid rgba(244,201,122,0.3); }
 .step-number.evening-num { background:rgba(155,143,232,0.15); color:var(--evening); border:1px solid rgba(155,143,232,0.3); }
 .step-number.weekly-num { background:rgba(126,200,217,0.15); color:var(--weekly); border:1px solid rgba(126,200,217,0.3); }
-.step-line {
-  width:1px; flex:1; margin-top:4px;
-  background:linear-gradient(to bottom, var(--border), transparent);
-  min-height:16px;
-}
+.step-line { width:1px; flex:1; margin-top:4px; background:linear-gradient(to bottom, var(--border), transparent); min-height:16px; }
 .step-item:last-child .step-line { display:none; }
 .step-content { flex:1; padding-top:4px; }
 .step-name { font-size:13.5px; font-weight:600; margin-bottom:3px; }
 .step-product { font-size:12px; color:var(--accent); margin-bottom:3px; font-weight:500; }
 .step-tip { font-size:12px; color:var(--muted); line-height:1.5; }
 .step-time { font-size:11px; color:var(--muted); margin-top:4px; opacity:0.7; }
-
-/* Products Grid */
 .products-section { padding:0 16px 16px; }
 .products-header { margin-bottom:12px; padding-top:4px; border-top:1px solid var(--border); padding-top:16px; }
 .products-title { font-size:14px; font-weight:600; margin-bottom:3px; }
 .products-sub { font-size:12px; color:var(--muted); }
 .products-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.product-card {
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:10px; padding:12px; transition:all 0.2s; cursor:pointer;
-}
+.product-card { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px; transition:all 0.2s; cursor:pointer; }
 .product-card:hover { border-color:rgba(126,217,143,0.2); }
 .product-emoji { font-size:20px; margin-bottom:6px; }
 .product-name { font-size:12px; font-weight:600; margin-bottom:2px; line-height:1.3; }
 .product-type { font-size:11px; color:var(--muted); }
 .product-badge { display:inline-block; margin-top:6px; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; background:var(--accent-dim); color:var(--accent); }
-
-/* Ingredients */
 .ingredients-section { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 16px 16px; }
 .ingr-col { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px; }
 .ingr-header { font-size:12px; font-weight:600; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border); }
@@ -236,8 +209,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .ingr-header.bad { color:var(--danger); }
 .ingr-item { font-size:12px; color:var(--muted); padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03); line-height:1.4; }
 .ingr-item:last-child { border:none; }
-
-/* Reminder Section */
 .reminder-section { padding:0 16px 16px; margin-top:4px; }
 .reminder-section-title { font-size:14px; font-weight:600; margin-bottom:3px; }
 .reminder-section-sub { font-size:12px; color:var(--muted); margin-bottom:12px; }
@@ -249,12 +220,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .add-reminder-btn:hover { background:var(--accent-dim); }
 
 /* SKINCARE POPUP */
-.skincare-popup {
-  display:none; position:fixed; bottom:30px; right:30px; z-index:150;
-  background:var(--surface); border:1px solid rgba(126,217,143,0.3);
-  border-radius:16px; padding:20px 24px; width:300px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.5); animation:slideUp 0.4s ease;
-}
+.skincare-popup { display:none; position:fixed; bottom:30px; right:30px; z-index:150; background:var(--surface); border:1px solid rgba(126,217,143,0.3); border-radius:16px; padding:20px 24px; width:300px; box-shadow:0 20px 60px rgba(0,0,0,0.5); animation:slideUp 0.4s ease; }
 .skincare-popup.open { display:block; }
 @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 .popup-title { font-family:'Fraunces',serif; font-size:17px; font-weight:600; margin-bottom:6px; }
@@ -297,62 +263,24 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 
 /* UPLOAD MODE TOGGLE */
 .upload-mode-toggle { display:flex; gap:6px; margin-bottom:0; }
-.mode-btn {
-  flex:1; padding:9px 12px; border-radius:10px; font-size:12px; font-weight:600;
-  background:var(--surface2); border:1px solid var(--border); color:var(--muted);
-  cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif;
-  display:flex; align-items:center; justify-content:center; gap:6px;
-}
+.mode-btn { flex:1; padding:9px 12px; border-radius:10px; font-size:12px; font-weight:600; background:var(--surface2); border:1px solid var(--border); color:var(--muted); cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; display:flex; align-items:center; justify-content:center; gap:6px; }
 .mode-btn.active { background:var(--accent-dim); border-color:rgba(126,217,143,0.3); color:var(--accent); }
 
 /* CAMERA */
-.camera-zone {
-  display:none; border:1.5px solid rgba(126,217,143,0.25); border-radius:var(--radius);
-  background:var(--surface); overflow:hidden; position:relative; min-height:160px;
-}
+.camera-zone { display:none; border:1.5px solid rgba(126,217,143,0.25); border-radius:var(--radius); background:var(--surface); overflow:hidden; position:relative; min-height:160px; }
 .camera-zone.active { display:block; }
-#cameraFeed {
-  width:100%; max-height:280px; object-fit:cover; display:block;
-  border-radius:var(--radius);
-}
-.camera-overlay {
-  position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:flex-end; padding:16px;
-  background:linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
-  pointer-events:none;
-}
+#cameraFeed { width:100%; max-height:280px; object-fit:cover; display:block; border-radius:var(--radius); }
+.camera-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:16px; background:linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%); pointer-events:none; }
 .camera-hint { font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:8px; }
-.camera-ring {
-  width:60px; height:60px; border-radius:50%;
-  border:3px solid rgba(126,217,143,0.5);
-  animation:pulse-ring 2s infinite;
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-60%);
-}
-@keyframes pulse-ring {
-  0%,100%{ box-shadow:0 0 0 0 rgba(126,217,143,0.4); }
-  50%{ box-shadow:0 0 0 12px rgba(126,217,143,0); }
-}
-.capture-btn {
-  width:100%; padding:14px; background:var(--accent); color:#0A0C0B;
-  border:none; border-radius:var(--radius); font-family:'DM Sans',sans-serif;
-  font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s;
-  display:none; align-items:center; justify-content:center; gap:8px; margin-top:10px;
-}
+.camera-ring { width:60px; height:60px; border-radius:50%; border:3px solid rgba(126,217,143,0.5); animation:pulse-ring 2s infinite; position:absolute; top:50%; left:50%; transform:translate(-50%,-60%); }
+@keyframes pulse-ring { 0%,100%{ box-shadow:0 0 0 0 rgba(126,217,143,0.4); } 50%{ box-shadow:0 0 0 12px rgba(126,217,143,0); } }
+.capture-btn { width:100%; padding:14px; background:var(--accent); color:#0A0C0B; border:none; border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s; display:none; align-items:center; justify-content:center; gap:8px; margin-top:10px; }
 .capture-btn.visible { display:flex; }
 .capture-btn:hover { background:#92E8A3; }
-.camera-start-btn {
-  width:100%; padding:14px; background:var(--surface2); border:1px solid rgba(126,217,143,0.3);
-  border-radius:var(--radius); color:var(--accent); font-family:'DM Sans',sans-serif;
-  font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-}
+.camera-start-btn { width:100%; padding:14px; background:var(--surface2); border:1px solid rgba(126,217,143,0.3); border-radius:var(--radius); color:var(--accent); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
 .camera-start-btn:hover { background:var(--accent-dim); }
 .camera-controls { display:flex; gap:8px; margin-top:8px; }
-.cam-ctrl-btn {
-  flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border);
-  border-radius:10px; color:var(--muted); font-size:12px; font-weight:500;
-  cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s;
-}
+.cam-ctrl-btn { flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--muted); font-size:12px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
 .cam-ctrl-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.15); }
 .typing span { width:6px; height:6px; border-radius:50%; background:var(--muted); animation:bounce 1.2s infinite; }
 .typing span:nth-child(2) { animation-delay:0.2s; }
@@ -370,14 +298,14 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
   <div style="display:flex;align-items:center;gap:8px;">
     <a href="/history" style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:500;text-decoration:none;color:var(--muted);border:1px solid transparent;transition:all 0.2s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">📋 History</a>
     <a href="/find-dermat" style="padding:8px 16px;border-radius:10px;font-size:13px;font-weight:500;text-decoration:none;color:var(--muted);border:1px solid transparent;transition:all 0.2s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='transparent'">📍 Find Dermat</a>
-    <div class="header-badge">AI Dermatologist </div>
+    <div class="header-badge">AI Dermatologist</div>
   </div>
 </header>
 
 <main>
   <div class="left-panel">
     <div class="section-title">Scan Your Skin</div>
-    <!-- MODE TOGGLE -->
+
     <div class="upload-mode-toggle">
       <button class="mode-btn active" id="modeUpload" onclick="switchMode('upload')">📁 Upload Photo</button>
       <button class="mode-btn" id="modeCamera" onclick="switchMode('camera')">🤳 Live Camera</button>
@@ -418,6 +346,12 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()" disabled>
       <span>✦</span> Analyze Skin
     </button>
+
+    <!-- NEW SCAN BUTTON -->
+    <button class="refresh-btn" id="refreshBtn" onclick="resetScan()">
+      🔄 New Scan
+    </button>
+
     <div class="loading" id="loading">
       <div class="spinner"></div>
       <span>AI analyzing your skin<span class="loading-dots"></span></span>
@@ -463,6 +397,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
         </button>
       </div>
     </div>
+
     <div class="disclaimer">
       <div style="font-size:14px;flex-shrink:0;">⚕️</div>
       <div>This AI analysis is for informational purposes only and does not constitute medical advice. Always consult a qualified dermatologist.</div>
@@ -480,7 +415,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
       <div class="chat-messages" id="chatMessages">
         <div class="msg"><div class="msg-avatar">🤖</div><div class="msg-bubble">Hi! I'm DermAI 👋 Upload a skin photo and I'll analyze it, or ask me anything about your skin!</div></div>
       </div>
-      <div class="chat-suggestions">
+      <div class="chat-suggestions" id="chatSuggestions">
         <div class="suggestion-chip" onclick="sendSuggestion(this)">What is this rash?</div>
         <div class="suggestion-chip" onclick="sendSuggestion(this)">Is it contagious?</div>
         <div class="suggestion-chip" onclick="sendSuggestion(this)">Do I need a dermat?</div>
@@ -498,8 +433,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     <!-- SKINCARE -->
     <div class="tab-content" id="tab-skincare">
       <div class="skincare-panel">
-
-        <!-- Personalized Banner (shown after diagnosis) -->
         <div id="personalizedBanner" style="display:none;" class="personalized-banner">
           <div class="personalized-banner-icon">✨</div>
           <div>
@@ -507,15 +440,11 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
             <div class="personalized-banner-sub" id="bannerSub">Routine customized based on your scan</div>
           </div>
         </div>
-
-        <!-- Time Toggle -->
         <div class="time-toggle">
           <button class="time-btn active morning" id="btnMorning" onclick="switchTime('morning')"><span>☀️</span> Morning</button>
           <button class="time-btn" id="btnEvening" onclick="switchTime('evening')"><span>🌙</span> Evening</button>
           <button class="time-btn" id="btnWeekly" onclick="switchTime('weekly')"><span>📅</span> Weekly</button>
         </div>
-
-        <!-- MORNING -->
         <div class="routine-view active" id="view-morning">
           <div class="routine-header">
             <div class="routine-time-badge morning-badge"><span class="time-dot morning-dot"></span>6:00 – 8:00 AM</div>
@@ -524,8 +453,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
           </div>
           <div class="steps-timeline" id="morningSteps"></div>
         </div>
-
-        <!-- EVENING -->
         <div class="routine-view" id="view-evening">
           <div class="routine-header">
             <div class="routine-time-badge evening-badge"><span class="time-dot evening-dot"></span>9:00 – 10:00 PM</div>
@@ -534,8 +461,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
           </div>
           <div class="steps-timeline" id="eveningSteps"></div>
         </div>
-
-        <!-- WEEKLY -->
         <div class="routine-view" id="view-weekly">
           <div class="routine-header">
             <div class="routine-time-badge weekly-badge"><span class="time-dot weekly-dot"></span>2–3x per week</div>
@@ -544,8 +469,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
           </div>
           <div class="steps-timeline" id="weeklySteps"></div>
         </div>
-
-        <!-- Products -->
         <div class="products-section">
           <div class="products-header">
             <div class="products-title">🛒 Top Picks</div>
@@ -553,8 +476,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
           </div>
           <div class="products-grid" id="productsGrid"></div>
         </div>
-
-        <!-- Ingredients -->
         <div class="ingredients-section">
           <div class="ingr-col">
             <div class="ingr-header good">✅ Use These</div>
@@ -565,15 +486,12 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
             <div class="ingr-list" id="ingrBad"></div>
           </div>
         </div>
-
-        <!-- Reminders -->
         <div class="reminder-section">
           <div class="reminder-section-title">⏰ Reminders</div>
           <div class="reminder-section-sub">Get notified for your skincare routine</div>
           <div id="remindersList"></div>
           <button class="add-reminder-btn" onclick="document.getElementById('reminderModal').classList.add('open')">+ Set Skincare Reminder</button>
         </div>
-
       </div>
     </div>
   </div>
@@ -634,7 +552,6 @@ let currentDiagnosis = null;
 let reminders = [];
 const SESSION_ID = 'user_' + Math.random().toString(36).slice(2,8);
 
-// Default routines (shown before any scan)
 const defaultRoutines = {
   morning: [
     { name:'Cleanse', product:'CeraVe Hydrating Cleanser', tip:'Use lukewarm water. Massage 60 seconds. Pat dry.', time:'~1 min', num:'morning-num' },
@@ -670,7 +587,6 @@ const defaultIngredients = {
   bad: ['Fragrance / Parfum', 'Alcohol Denat', 'SLS / SLES', 'Essential Oils', 'Mineral Oil', 'Parabens']
 };
 
-// Render steps on page load
 renderSteps('morningSteps', defaultRoutines.morning, 'morning-num');
 renderSteps('eveningSteps', defaultRoutines.evening, 'evening-num');
 renderSteps('weeklySteps', defaultRoutines.weekly, 'weekly-num');
@@ -708,7 +624,6 @@ function renderIngredients(good, bad) {
   document.getElementById('ingrBad').innerHTML = bad.map(i => `<div class="ingr-item">✗ ${i}</div>`).join('');
 }
 
-// TIME TOGGLE
 function switchTime(time) {
   document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active','morning','evening','weekly'));
   document.querySelectorAll('.routine-view').forEach(v => v.classList.remove('active'));
@@ -717,7 +632,6 @@ function switchTime(time) {
   document.getElementById('view-' + time).classList.add('active');
 }
 
-// PERSONALIZED SKINCARE (after scan)
 const conditionRoutines = {
   acne: {
     morning: [
@@ -776,6 +690,36 @@ const conditionRoutines = {
   }
 };
 
+// ─── RESET / NEW SCAN ───
+function resetScan() {
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('uploadZone').classList.remove('has-image');
+  document.getElementById('fileInput').value = '';
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('analyzeBtn').style.display = 'flex';
+  document.getElementById('refreshBtn').style.display = 'none';
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('loading').style.display = 'none';
+  currentDiagnosis = null;
+  document.getElementById('personalizedBanner').style.display = 'none';
+  renderSteps('morningSteps', defaultRoutines.morning, 'morning-num');
+  renderSteps('eveningSteps', defaultRoutines.evening, 'evening-num');
+  renderSteps('weeklySteps', defaultRoutines.weekly, 'weekly-num');
+  renderProducts(defaultProducts);
+  renderIngredients(defaultIngredients.good, defaultIngredients.bad);
+  // Reset chat suggestions to default
+  document.getElementById('chatSuggestions').innerHTML = `
+    <div class="suggestion-chip" onclick="sendSuggestion(this)">What is this rash?</div>
+    <div class="suggestion-chip" onclick="sendSuggestion(this)">Is it contagious?</div>
+    <div class="suggestion-chip" onclick="sendSuggestion(this)">Do I need a dermat?</div>
+    <div class="suggestion-chip" onclick="sendSuggestion(this)">How long to heal?</div>
+    <div class="suggestion-chip" onclick="sendSuggestion(this)">What causes acne?</div>`;
+  document.querySelector('.left-panel').scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('✨ Ready for a new scan!');
+}
+
 // ─── MODE TOGGLE ───
 function switchMode(mode) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -794,7 +738,7 @@ function switchMode(mode) {
 
 // ─── CAMERA ───
 let cameraStream = null;
-let facingMode = 'environment'; // back camera default
+let facingMode = 'environment';
 
 async function startCamera() {
   try {
@@ -844,26 +788,18 @@ function capturePhoto() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
-
-  // Flash effect
   const flash = document.createElement('div');
   flash.style.cssText = 'position:fixed;inset:0;background:white;opacity:0.8;z-index:999;pointer-events:none;transition:opacity 0.3s';
   document.body.appendChild(flash);
   setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 300); }, 100);
-
   canvas.toBlob(blob => {
-    // Show preview
     const url = URL.createObjectURL(blob);
     const img = document.getElementById('previewImg');
     img.src = url;
-
-    // Store as file for upload
     const file = new File([blob], 'camera_scan.jpg', { type: 'image/jpeg' });
     const dt = new DataTransfer();
     dt.items.add(file);
     document.getElementById('fileInput').files = dt.files;
-
-    // Switch to preview mode
     stopCamera();
     document.getElementById('cameraZone').style.display = 'none';
     document.getElementById('uploadZone').style.display = 'flex';
@@ -874,13 +810,11 @@ function capturePhoto() {
     document.getElementById('analyzeBtn').style.display = 'flex';
     document.getElementById('analyzeBtn').disabled = false;
     showToast('✅ Photo captured! Click Analyze.');
-
-    // Auto analyze after 1 sec
     setTimeout(() => analyzeImage(), 800);
   }, 'image/jpeg', 0.92);
 }
 
-// ─── UPLOAD
+// ─── UPLOAD ───
 function handleUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -891,6 +825,9 @@ function handleUpload(event) {
     document.getElementById('uploadPlaceholder').style.display = 'none';
     document.getElementById('uploadZone').classList.add('has-image');
     document.getElementById('analyzeBtn').disabled = false;
+    // Hide refresh if showing, reset result
+    document.getElementById('refreshBtn').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'none';
   };
   reader.readAsDataURL(file);
 }
@@ -908,11 +845,12 @@ uploadZone.addEventListener('drop', (e) => {
   }
 });
 
-// ANALYZE
+// ─── ANALYZE ───
 async function analyzeImage() {
   const fileInput = document.getElementById('fileInput');
   if (!fileInput.files[0]) return;
   document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('refreshBtn').style.display = 'none';
   document.getElementById('loading').style.display = 'block';
   document.getElementById('resultCard').style.display = 'none';
   const formData = new FormData();
@@ -935,19 +873,36 @@ async function analyzeImage() {
 function showResult(d) {
   document.getElementById('diagnosisName').textContent = d.diagnosis || 'Unknown';
   document.getElementById('sciName').textContent = d.scientific_name || '';
+
+  // Confidence bar with color coding
   const conf = Math.round(d.confidence) || 0;
-  document.getElementById('confidenceBar').style.width = conf + '%';
-  document.getElementById('confidenceText').textContent = conf + '%';
+  const bar = document.getElementById('confidenceBar');
+  const confText = document.getElementById('confidenceText');
+  bar.style.width = conf + '%';
+  confText.textContent = conf + '%';
+  if (conf >= 75) {
+    bar.style.background = 'var(--accent)';
+    confText.style.color = 'var(--accent)';
+  } else if (conf >= 50) {
+    bar.style.background = 'var(--warn)';
+    confText.style.color = 'var(--warn)';
+  } else {
+    bar.style.background = 'var(--danger)';
+    confText.style.color = 'var(--danger)';
+  }
+
   document.getElementById('whatIsThis').textContent = d.what_is_this || '—';
   document.getElementById('isSerious').textContent = d.is_serious || '—';
   document.getElementById('homeRemedies').textContent = d.home_remedies || '—';
   document.getElementById('medicine').textContent = d.medicine || '—';
   document.getElementById('doctorAdvice').textContent = d.doctor_advice || '—';
   document.getElementById('prevention').textContent = d.prevention || '—';
+
   const sev = (d.severity||'moderate').toLowerCase();
   const badge = document.getElementById('severityBadge');
   badge.textContent = sev.charAt(0).toUpperCase()+sev.slice(1);
   badge.className = 'severity-badge severity-' + sev;
+
   renderTags('causesTags', d.causes||[], '');
   renderTags('symptomsTags', d.symptoms||[], '');
   renderTags('ingrUse', d.ingredients_use||[], 'tag-good');
@@ -955,7 +910,27 @@ function showResult(d) {
   document.getElementById('uncertainNote').style.display = d.uncertain ? 'block' : 'none';
   document.getElementById('resultCard').style.display = 'block';
   document.getElementById('resultCard').scrollIntoView({ behavior:'smooth', block:'nearest' });
-  addBotMessage(`✅ Scan done! **${d.diagnosis}** detected — ${sev} severity. Check the report. Want to know more?`);
+
+  // Show refresh button
+  document.getElementById('refreshBtn').style.display = 'flex';
+
+  // Dynamic chat suggestions based on category
+  const category = (d.category || d.diagnosis || '').toLowerCase();
+  const suggestionMap = {
+    'acne': ['Kya ye scar karega?', 'Best spot treatment?', 'Diet tips for acne?', 'Benzoyl peroxide safe hai?'],
+    'pigmentation': ['Dark spots fade honge?', 'Best serum for spots?', 'Kitne time mein results?', 'Sunscreen enough hai?'],
+    'aging': ['Best anti-aging routine?', 'Retinol safe hai?', 'Reverse ho sakta hai?', 'SPF zaruri hai?'],
+    'disease': ['Contagious hai kya?', 'Doctor dikhana chahiye?', 'Itching kaise rokun?', 'Heal hone mein kitna time?'],
+    'hair': ['Kaunsa shampoo use karun?', 'Hair wapas ayenge?', 'Contagious hai?', 'Diet tips for hair?'],
+    'scalp': ['Kaunsa shampoo use karun?', 'Dandruff ke liye kya karun?', 'Weekly treatment?', 'Doctor dikhana chahiye?'],
+  };
+  const matchKey = Object.keys(suggestionMap).find(k => category.includes(k));
+  const chips = suggestionMap[matchKey] || ['Ye kitna serious hai?', 'Best treatment kya hai?', 'Ghar pe kya karun?', 'Doctor dikhana chahiye?'];
+  document.getElementById('chatSuggestions').innerHTML = chips
+    .map(c => `<div class="suggestion-chip" onclick="sendSuggestion(this)">${c}</div>`)
+    .join('');
+
+  addBotMessage(`✅ Scan done! **${d.diagnosis}** detected — ${sev} severity. Check the report on the left. Koi bhi sawaal puchh sakte ho! 👇`);
   setTimeout(() => showSkincarePopup(d.diagnosis), 1500);
   updateSkincareForDiagnosis(d);
   saveScanToHistory(d);
@@ -974,7 +949,6 @@ function updateSkincareForDiagnosis(d) {
     renderProducts(r.products);
     renderIngredients(r.good, r.bad);
   } else {
-    // Generic update based on API response
     const good = d.ingredients_use || defaultIngredients.good;
     const bad = d.ingredients_avoid || defaultIngredients.bad;
     renderIngredients(good, bad);
@@ -985,7 +959,7 @@ function renderTags(id, arr, cls) {
   document.getElementById(id).innerHTML = arr.map(t => `<span class="tag ${cls}">${t}</span>`).join('');
 }
 
-// POPUP
+// ─── POPUP ───
 function showSkincarePopup(diagnosis) {
   document.getElementById('popupSub').textContent = `You have ${diagnosis} — I have a personalized routine for you!`;
   document.getElementById('skincarePopup').classList.add('open');
@@ -1000,7 +974,7 @@ function showSkincareTab() {
   document.getElementById('tab-skincare').classList.add('active');
 }
 
-// TABS
+// ─── TABS ───
 function switchTab(tab, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1008,7 +982,7 @@ function switchTab(tab, el) {
   document.getElementById('tab-'+tab).classList.add('active');
 }
 
-// MEDICATIONS
+// ─── MEDICATIONS ───
 function loadMeds() {
   const diagnosis = currentDiagnosis?.diagnosis?.toLowerCase() || '';
   document.getElementById('medModalSub').textContent = currentDiagnosis ? `Medications for ${currentDiagnosis.diagnosis}` : 'Common dermatology medications';
@@ -1016,13 +990,14 @@ function loadMeds() {
 }
 function getMedsForDiagnosis(d) {
   let html = '';
-  if (d.includes('acne')) {
+  if (d.includes('acne') || d.includes('pih') || d.includes('pie') || d.includes('hyperpigmentation') || d.includes('scar')) {
     html += medCat('🧴 Topical', [
       { name:'Benzoyl Peroxide 2.5%', use:'Kills acne bacteria. Apply thin layer at night. Start slow.', tag:'OTC' },
       { name:'Clindamycin 1% Gel', use:'Antibiotic gel. Morning use. Reduces inflammation.', tag:'Prescription' },
       { name:'Adapalene 0.1% (Differin)', use:'Retinoid. Unclogs pores. 3x/week at night. Purging in first 4 weeks is normal.', tag:'OTC' },
       { name:'Niacinamide 10% Serum', use:'Reduces oil, fades marks. Daily use AM or PM.', tag:'OTC' },
-      { name:'Azelaic Acid 10%', use:'Kills bacteria + fades marks. Very gentle.', tag:'OTC' },
+      { name:'Azelaic Acid 10%', use:'Kills bacteria + fades marks. Very gentle. Great for PIH.', tag:'OTC' },
+      { name:'Tranexamic Acid 2-5%', use:'Excellent for post-acne hyperpigmentation. Use AM or PM.', tag:'OTC' },
     ]);
     html += medCat('💊 Oral', [
       { name:'Doxycycline 100mg', use:'Antibiotic. 2x daily with food. For moderate-severe acne.', tag:'Prescription' },
@@ -1040,12 +1015,13 @@ function getMedsForDiagnosis(d) {
       { name:'Dupilumab (Dupixent)', use:'Biologic injection for severe eczema.', tag:'Prescription' },
     ]);
   } else {
-    html += medCat('🧴 General', [
+    html += medCat('🧴 General Dermatology', [
       { name:'Hydrocortisone 1%', use:'For redness, itching, mild inflammation.', tag:'OTC' },
       { name:'Cetirizine 10mg', use:'For allergic reactions and itching.', tag:'OTC' },
       { name:'Clotrimazole 1%', use:'For fungal skin infections.', tag:'OTC' },
       { name:'Mupirocin 2%', use:'For bacterial skin infections.', tag:'Prescription' },
       { name:'Calamine Lotion', use:'Soothes itch and redness. Safe for all ages.', tag:'OTC' },
+      { name:'Niacinamide 10%', use:'For pigmentation, oil control, barrier support.', tag:'OTC' },
     ]);
   }
   html += `<div style="background:rgba(240,112,112,0.08);border:1px solid rgba(240,112,112,0.15);border-radius:10px;padding:14px;margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.6;">⚕️ <strong style="color:var(--text)">Important:</strong> Prescription medications require a doctor's prescription. Always consult a dermatologist before starting new medication.</div>`;
@@ -1055,7 +1031,7 @@ function medCat(title, items) {
   return `<div class="med-category"><div class="med-category-title">${title}</div>${items.map(m=>`<div class="med-item"><div class="med-name">${m.name}</div><div class="med-use">${m.use}</div><span class="med-tag ${m.tag==='Prescription'?'med-tag-rx':''}">${m.tag}</span></div>`).join('')}</div>`;
 }
 
-// CHAT
+// ─── CHAT ───
 function sendSuggestion(el) { document.getElementById('chatInput').value = el.textContent; sendMessage(); }
 async function sendMessage() {
   const input = document.getElementById('chatInput');
@@ -1091,17 +1067,18 @@ function addBotMessage(text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// SAVE TO HISTORY
+// ─── HISTORY ───
 function saveScanToHistory(d) {
   const scans = JSON.parse(localStorage.getItem('dermascans') || '[]');
   const imgData = document.getElementById('previewImg').src;
-  scans.push({
+  scans.unshift({
     id: Date.now(),
     date: new Date().toISOString(),
     diagnosis: d.diagnosis,
     scientific_name: d.scientific_name,
     severity: d.severity,
     confidence: d.confidence,
+    category: d.category,
     what_is_this: d.what_is_this,
     is_serious: d.is_serious,
     causes: d.causes,
@@ -1113,10 +1090,12 @@ function saveScanToHistory(d) {
     imgData: imgData.startsWith('data:') ? imgData : null,
     imgPlaceholder: '🩺'
   });
+  // Keep only last 20 scans
+  if (scans.length > 20) scans.splice(20);
   localStorage.setItem('dermascans', JSON.stringify(scans));
 }
 
-// REMINDERS
+// ─── REMINDERS ───
 function saveReminder() {
   const type = document.getElementById('reminderType').value;
   const time = document.getElementById('reminderTime').value;
@@ -1150,6 +1129,7 @@ function showToast(msg) {
   toast.textContent = msg; toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2800);
 }
+
 document.getElementById('reminderModal').addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
 document.getElementById('medModal').addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
 </script>
