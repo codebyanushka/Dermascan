@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DermaCam — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body {
+  font-family:'DM Sans',sans-serif;
+  background:#0A0C0B;
+  color:#EDEEED;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  overflow:hidden;
+}
+.bg-blob { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; }
+.bg-blob-1 { width:500px; height:500px; background:rgba(126,217,143,0.06); top:-100px; left:-100px; animation:float1 8s ease-in-out infinite; }
+.bg-blob-2 { width:400px; height:400px; background:rgba(126,217,143,0.04); bottom:-80px; right:-80px; animation:float2 10s ease-in-out infinite; }
+.bg-blob-3 { width:200px; height:200px; background:rgba(155,143,232,0.04); top:50%; left:50%; transform:translate(-50%,-50%); animation:float3 12s ease-in-out infinite; }
+@keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,20px)} }
+@keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,-30px)} }
+@keyframes float3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.3)} }
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: linear-gradient(rgba(126,217,143,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(126,217,143,0.03) 1px, transparent 1px);
+  background-size:40px 40px; z-index:0; pointer-events:none;
+}
+.login-card { position:relative; z-index:1; width:420px; max-width:92vw; animation:cardIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+@keyframes cardIn { from{opacity:0;transform:translateY(24px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+.logo-area { text-align:center; margin-bottom:36px; animation:fadeUp 0.6s 0.1s both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.logo-icon-wrap {
+  width:64px; height:64px;
+  background:linear-gradient(135deg, #7ED98F, #5BC470);
+  border-radius:18px; display:flex; align-items:center; justify-content:center;
+  font-size:30px; margin:0 auto 16px;
+  box-shadow:0 0 40px rgba(126,217,143,0.25);
+}
+.logo-title { font-family:'Fraunces',serif; font-size:32px; font-weight:600; letter-spacing:-0.5px; color:#EDEEED; }
+.logo-title span { color:#7ED98F; }
+.logo-sub { font-size:14px; color:#6B7A6D; margin-top:6px; line-height:1.5; }
+.card-body {
+  background:#131513; border:1px solid rgba(255,255,255,0.07);
+  border-radius:20px; padding:32px; animation:fadeUp 0.6s 0.2s both;
+  position:relative; overflow:hidden;
+}
+.card-body::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(126,217,143,0.3), transparent);
+}
+.card-title { font-family:'Fraunces',serif; font-size:22px; font-weight:600; margin-bottom:6px; letter-spacing:-0.3px; }
+.card-desc { font-size:13px; color:#6B7A6D; margin-bottom:28px; line-height:1.6; }
+.features { display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+.feature-item { display:flex; align-items:center; gap:10px; font-size:13px; color:#9AAA9C; }
+.feature-dot { width:6px; height:6px; border-radius:50%; background:#7ED98F; flex-shrink:0; }
+.divider { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+.divider-line { flex:1; height:1px; background:rgba(255,255,255,0.07); }
+.divider-text { font-size:12px; color:#6B7A6D; white-space:nowrap; }
+.google-btn {
+  width:100%; padding:14px 20px; background:#1A1D1A;
+  border:1.5px solid rgba(255,255,255,0.1); border-radius:12px;
+  color:#EDEEED; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px;
+  transition:all 0.2s; position:relative; overflow:hidden;
+}
+.google-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(126,217,143,0.05), transparent); opacity:0; transition:opacity 0.2s; }
+.google-btn:hover { border-color:rgba(126,217,143,0.35); background:#1E211E; transform:translateY(-1px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+.google-btn:hover::before { opacity:1; }
+.google-btn:active { transform:translateY(0); }
+.google-icon { width:20px; height:20px; flex-shrink:0; }
+.google-btn.loading { pointer-events:none; opacity:0.7; }
+.spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.2); border-top-color:#7ED98F; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+.google-btn.loading .spinner-sm { display:block; }
+.google-btn.loading .google-icon { display:none; }
+.google-btn.loading .btn-text::after { content:'...'; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.error-msg { display:none; background:rgba(240,112,112,0.08); border:1px solid rgba(240,112,112,0.2); border-radius:10px; padding:12px 16px; font-size:13px; color:#F07070; margin-top:16px; line-height:1.5; text-align:center; }
+.error-msg.show { display:block; animation:fadeUp 0.3s ease; }
+.disclaimer { margin-top:20px; font-size:11.5px; color:#4A5A4C; text-align:center; line-height:1.6; }
+.user-area { display:none; text-align:center; padding:8px 0; }
+.user-avatar { width:56px; height:56px; border-radius:50%; margin:0 auto 12px; border:2px solid rgba(126,217,143,0.3); display:block; }
+.user-name { font-size:16px; font-weight:600; color:#EDEEED; margin-bottom:4px; }
+.user-email { font-size:13px; color:#6B7A6D; margin-bottom:20px; }
+.continue-btn {
+  width:100%; padding:14px; background:#7ED98F; color:#0A0C0B;
+  border:none; border-radius:12px; font-family:'DM Sans',sans-serif;
+  font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.continue-btn:hover { background:#92E8A3; transform:translateY(-1px); }
+.signout-link { display:block; margin-top:12px; font-size:12px; color:#6B7A6D; cursor:pointer; text-align:center; text-decoration:underline; text-underline-offset:2px; }
+.signout-link:hover { color:#EDEEED; }
+.success-ring { width:56px; height:56px; border-radius:50%; background:rgba(126,217,143,0.12); border:2px solid rgba(126,217,143,0.4); display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px; }
+
+/* Returning user chip */
+.returning-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(126,217,143,0.1); border:1px solid rgba(126,217,143,0.2);
+  color:#7ED98F; padding:4px 12px; border-radius:20px;
+  font-size:12px; font-weight:500; margin-bottom:12px;
+}
+.returning-dot { width:6px; height:6px; border-radius:50%; background:#7ED98F; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+</style>
+</head>
+<body>
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<div class="bg-blob bg-blob-3"></div>
+
+<div class="login-card">
+  <div class="logo-area">
+    <div class="logo-icon-wrap">🔬</div>
+    <div class="logo-title">Derma<span>Cam</span></div>
+    <div class="logo-sub">AI Dermatologist </div>
+  </div>
+
+  <div class="card-body">
+
+    <!-- Sign in view -->
+    <div id="signinView">
+
+      <!-- Returning user chip — shown only if they've logged in before -->
+      <div class="returning-chip" id="returningChip" style="display:none;">
+        <div class="returning-dot"></div>
+        <span id="returningName">Welcome back!</span>
+      </div>
+
+      <!-- Title changes based on new vs returning -->
+      <div class="card-title" id="cardTitle">Welcome! 👋</div>
+      <div class="card-desc" id="cardDesc">Sign in to have analysis, save your scans, track progress, and get personalized routines.</div>
+
+      <div class="features" id="featuresList">
+        <div class="feature-item"><div class="feature-dot"></div>Skin Analysis with AI diagnosis</div>
+        
+      </div>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-text">Continue with</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <button class="google-btn" id="googleBtn" onclick="signInWithGoogle()">
+        <div class="spinner-sm"></div>
+        <svg class="google-icon" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        <span class="btn-text" id="btnText">Sign in with Google</span>
+      </button>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <div class="disclaimer">
+        By signing in, you agree that this is an AI tool only.<br>
+        Always consult a qualified dermatologist for medical advice.
+      </div>
+    </div>
+
+    <!-- Logged in view -->
+    <div class="user-area" id="userView">
+      <div class="success-ring" id="successRing">✓</div>
+      <img class="user-avatar" id="userAvatar" src="" alt="avatar" style="display:none;">
+      <div class="user-name" id="userName">—</div>
+      <div class="user-email" id="userEmail">—</div>
+      <button class="continue-btn" onclick="goToApp()">
+        <span>🔬</span> Open DermaCam
+      </button>
+      <span class="signout-link" onclick="signOutUser()">Sign out</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script>
+// ══════════════════════════════════════
+// 🔥 PASTE YOUR FIREBASE CONFIG HERE
+// ══════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBJcwi0mMESVrVNe2V3G2mpfwA1vx0RCUc",
+  authDomain: "dermacam-928db.firebaseapp.com",
+  projectId: "dermacam-928db",
+  storageBucket: "dermacam-928db.firebasestorage.app",
+  messagingSenderId: "646497755655",
+  appId: "1:646497755655:web:87ef10c9789522e0ddc0a2"
+};
+
+// ── Check if returning user BEFORE Firebase loads ──
+// localStorage mein saved user hai toh returning user hai
+const savedUser = JSON.parse(localStorage.getItem('dermacam-user') || 'null');
+const hasLoggedInBefore = localStorage.getItem('dermacam-has-logged-in') === 'true';
+
+if (hasLoggedInBefore && savedUser) {
+  // Returning user — show "Welcome back" with their name
+  const firstName = (savedUser.name || '').split(' ')[0];
+  document.getElementById('cardTitle').textContent = `Welcome back, ${firstName}! 👋`;
+  document.getElementById('cardDesc').textContent = 'Your skin scans and progress are waiting for you.';
+  document.getElementById('returningChip').style.display = 'inline-flex';
+  document.getElementById('returningName').textContent = `${firstName} ka account`;
+  document.getElementById('btnText').textContent = `Continue as ${firstName}`;
+
+  // Show fewer features for returning users — they know already
+  document.getElementById('featuresList').innerHTML = `
+    <div class="feature-item"><div class="feature-dot"></div>Your scan history is safe ✓</div>
+    <div class="feature-item"><div class="feature-dot"></div>Progress tracking ready ✓</div>
+    <div class="feature-item"><div class="feature-dot"></div>Personalized routine waiting ✓</div>
+  `;
+} else {
+  // New user — fresh welcome
+  document.getElementById('cardTitle').textContent = 'Welcome! 👋';
+  document.getElementById('cardDesc').textContent = 'Sign in to save your scans, track progress, and get personalized routines.';
+}
+
+// ── Initialize Firebase ─────────────────
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+
+// ── Auth state listener ─────────────────
+auth.onAuthStateChanged(user => {
+  if (user) {
+    showUserView(user);
+  }
+  // Don't call showSigninView here — it's already shown by default
+});
+
+// ── Sign in with Google ─────────────────
+async function signInWithGoogle() {
+  const btn = document.getElementById('googleBtn');
+  btn.classList.add('loading');
+  document.getElementById('errorMsg').classList.remove('show');
+
+  try {
+    await auth.signInWithPopup(provider);
+    // onAuthStateChanged handles the rest
+  } catch (error) {
+    btn.classList.remove('loading');
+    const errEl = document.getElementById('errorMsg');
+    if (error.code === 'auth/popup-closed-by-user') {
+      errEl.textContent = '❌ Popup band ho gayi. Dobara try karo.';
+    } else if (error.code === 'auth/network-request-failed') {
+      errEl.textContent = '❌ Network error. Internet check karo.';
+    } else if (error.code === 'auth/api-key-not-valid') {
+      errEl.textContent = '❌ Firebase config galat hai. Developer se baat karo.';
+    } else {
+      errEl.textContent = `❌ ${error.message}`;
+    }
+    errEl.classList.add('show');
+  }
+}
+
+// ── Show user view after login ──────────
+function showUserView(user) {
+  document.getElementById('signinView').style.display = 'none';
+  const uv = document.getElementById('userView');
+  uv.style.display = 'block';
+
+  document.getElementById('userName').textContent = user.displayName || 'User';
+  document.getElementById('userEmail').textContent = user.email || '';
+
+  const avatar = document.getElementById('userAvatar');
+  if (user.photoURL) {
+    avatar.src = user.photoURL;
+    avatar.style.display = 'block';
+    document.getElementById('successRing').style.display = 'none';
+  }
+
+  // Save to localStorage
+  const userData = {
+    uid: user.uid,
+    name: user.displayName,
+    email: user.email,
+    photo: user.photoURL,
+  };
+  localStorage.setItem('dermacam-user', JSON.stringify(userData));
+  localStorage.setItem('dermacam-has-logged-in', 'true'); // ← marks as returning user forever
+}
+
+// ── Go to app ───────────────────────────
+function goToApp() {
+  window.location.href = '/';
+}
+
+// ── Sign out ────────────────────────────
+async function signOutUser() {
+  await auth.signOut();
+  localStorage.removeItem('dermacam-user');
+  // NOTE: dermacam-has-logged-in is NOT removed — so next visit shows "Welcome back"
+  window.location.reload();
+}
+</script>
+</body>
+</html>

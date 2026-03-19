@@ -6,39 +6,17 @@
 <title>DermaCam — AI Dermatologist</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════
-   THEME VARIABLES — Dark (default) + Light
-═══════════════════════════════════════ */
 :root {
-  --bg: #0A0C0B;
-  --surface: #131513;
-  --surface2: #1A1D1A;
-  --surface3: #212421;
-  --border: rgba(255,255,255,0.07);
-  --accent: #7ED98F;
-  --accent-dim: rgba(126,217,143,0.12);
-  --warn: #F4C97A;
-  --danger: #F07070;
-  --text: #EDEEED;
-  --muted: #6B7A6D;
-  --radius: 14px;
-  --morning: #F4C97A;
-  --evening: #9B8FE8;
-  --weekly: #7EC8D9;
+  --bg: #0A0C0B; --surface: #131513; --surface2: #1A1D1A; --surface3: #212421;
+  --border: rgba(255,255,255,0.07); --accent: #7ED98F; --accent-dim: rgba(126,217,143,0.12);
+  --warn: #F4C97A; --danger: #F07070; --text: #EDEEED; --muted: #6B7A6D;
+  --radius: 14px; --morning: #F4C97A; --evening: #9B8FE8; --weekly: #7EC8D9;
   --shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 [data-theme="light"] {
-  --bg: #F5F0E8;
-  --surface: #FDFAF4;
-  --surface2: #F0EBE0;
-  --surface3: #EDE8DF;
-  --border: rgba(0,0,0,0.07);
-  --text: #2C2A22;
-  --muted: #7A7060;
-  --accent: #3B7A57;
-  --accent-dim: rgba(59,122,87,0.1);
-  --warn: #B8860B;
-  --danger: #C0392B;
+  --bg: #F5F0E8; --surface: #FDFAF4; --surface2: #F0EBE0; --surface3: #EDE8DF;
+  --border: rgba(0,0,0,0.07); --text: #2C2A22; --muted: #7A7060; --accent: #3B7A57;
+  --accent-dim: rgba(59,122,87,0.1); --warn: #B8860B; --danger: #C0392B;
   --shadow: 0 20px 60px rgba(0,0,0,0.08);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -51,8 +29,6 @@ body::before {
   pointer-events:none; z-index:0;
 }
 [data-theme="light"] body::before { display:none; }
-
-/* HEADER */
 header {
   display:flex; align-items:center; justify-content:space-between;
   padding:18px 40px; border-bottom:1px solid var(--border);
@@ -68,27 +44,44 @@ header {
 .header-nav { display:flex; align-items:center; gap:8px; }
 .nav-link { padding:8px 16px; border-radius:10px; font-size:13px; font-weight:500; text-decoration:none; color:var(--muted); border:1px solid transparent; transition:all 0.2s; }
 .nav-link:hover { color:var(--text); border-color:var(--border); }
-
-/* THEME TOGGLE */
-.theme-toggle {
-  width:38px; height:38px; border-radius:10px; background:var(--surface2);
-  border:1px solid var(--border); cursor:pointer; display:flex; align-items:center;
-  justify-content:center; font-size:16px; transition:all 0.2s; flex-shrink:0;
-}
+.theme-toggle { width:38px; height:38px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; flex-shrink:0; }
 .theme-toggle:hover { border-color:rgba(126,217,143,0.4); background:var(--accent-dim); }
 
-/* LAYOUT */
+/* User chip in header */
+.user-chip {
+  display:none; align-items:center; gap:8px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:20px; padding:4px 12px 4px 4px;
+  cursor:pointer; transition:all 0.2s; position:relative;
+}
+.user-chip:hover { border-color:rgba(126,217,143,0.3); }
+.user-chip img { width:26px; height:26px; border-radius:50%; border:1.5px solid rgba(126,217,143,0.3); flex-shrink:0; }
+.user-chip-name { font-size:12px; font-weight:500; color:var(--text); max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.user-chip-initial { width:26px; height:26px; border-radius:50%; background:var(--accent-dim); border:1.5px solid rgba(126,217,143,0.3); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--accent); flex-shrink:0; }
+
+/* Signout dropdown */
+.signout-dropdown {
+  display:none; position:absolute; top:calc(100% + 8px); right:0;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:8px; min-width:160px;
+  box-shadow:var(--shadow); z-index:200; animation:fadeUp 0.2s ease;
+}
+.user-chip:hover .signout-dropdown,
+.user-chip.open .signout-dropdown { display:block; }
+.signout-dropdown-name { font-size:12px; color:var(--muted); padding:6px 10px 8px; border-bottom:1px solid var(--border); margin-bottom:4px; }
+.signout-btn {
+  width:100%; padding:8px 10px; background:transparent;
+  border:none; border-radius:8px; color:var(--danger);
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500;
+  cursor:pointer; text-align:left; transition:all 0.2s;
+  display:flex; align-items:center; gap:8px;
+}
+.signout-btn:hover { background:rgba(240,112,112,0.08); }
+
 main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73px); position:relative; z-index:1; }
 .left-panel { padding:40px; border-right:1px solid var(--border); display:flex; flex-direction:column; gap:24px; overflow-y:auto; }
 .section-title { font-size:12px; font-weight:600; letter-spacing:1.5px; color:var(--muted); text-transform:uppercase; }
-
-/* UPLOAD */
-.upload-zone {
-  border:1.5px dashed rgba(126,217,143,0.25); border-radius:var(--radius);
-  padding:32px 20px; text-align:center; cursor:pointer; transition:all 0.2s;
-  background:var(--surface); position:relative; overflow:hidden;
-  min-height:160px; display:flex; align-items:center; justify-content:center;
-}
+.upload-zone { border:1.5px dashed rgba(126,217,143,0.25); border-radius:var(--radius); padding:32px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--surface); position:relative; overflow:hidden; min-height:160px; display:flex; align-items:center; justify-content:center; }
 .upload-zone:hover { border-color:rgba(126,217,143,0.5); background:var(--surface2); }
 .upload-zone.has-image { padding:0; border-style:solid; }
 .upload-icon { font-size:32px; margin-bottom:12px; }
@@ -96,31 +89,18 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .upload-sub { font-size:13px; color:var(--muted); }
 #fileInput { display:none; }
 #previewImg { width:100%; max-height:280px; object-fit:cover; border-radius:var(--radius); display:none; }
-
-/* BUTTONS */
-.analyze-btn {
-  width:100%; padding:16px; background:var(--accent); color:#0A0C0B;
-  border:none; border-radius:var(--radius); font-family:'DM Sans',sans-serif;
-  font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-}
+.analyze-btn { width:100%; padding:16px; background:var(--accent); color:#0A0C0B; border:none; border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
 .analyze-btn:hover { background:#92E8A3; transform:translateY(-1px); }
 .analyze-btn:disabled { background:var(--surface3); color:var(--muted); cursor:not-allowed; transform:none; }
-.refresh-btn {
-  width:100%; padding:13px; background:transparent;
-  border:1.5px solid var(--border); border-radius:var(--radius);
-  color:var(--muted); font-family:'DM Sans',sans-serif;
-  font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s;
-  display:none; align-items:center; justify-content:center; gap:8px;
-}
+.refresh-btn { width:100%; padding:13px; background:transparent; border:1.5px solid var(--border); border-radius:var(--radius); color:var(--muted); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s; display:none; align-items:center; justify-content:center; gap:8px; }
 .refresh-btn:hover { border-color:rgba(126,217,143,0.4); color:var(--accent); background:var(--accent-dim); }
+.share-btn { width:100%; padding:13px; background:transparent; border:1.5px solid rgba(126,217,143,0.3); border-radius:var(--radius); color:var(--accent); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s; display:none; align-items:center; justify-content:center; gap:8px; }
+.share-btn:hover { background:var(--accent-dim); }
 .loading { display:none; text-align:center; padding:20px; color:var(--muted); font-size:14px; }
 .spinner { width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .loading-dots::after { content:''; animation:dots 1.5s infinite; }
 @keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
-
-/* RESULT CARD */
 .result-card { display:none; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; animation:fadeUp 0.4s ease; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 .result-header { padding:16px 20px; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -140,26 +120,12 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .tag-good { background:rgba(126,217,143,0.08); border-color:rgba(126,217,143,0.2); color:var(--accent); }
 .uncertain-note { background:rgba(244,201,122,0.08); border:1px solid rgba(244,201,122,0.2); border-radius:10px; padding:12px 16px; font-size:13px; color:var(--warn); line-height:1.5; }
 .disclaimer { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:14px 18px; font-size:12px; color:var(--muted); line-height:1.6; display:flex; gap:10px; }
-
-/* SHARE BUTTON */
-.share-btn {
-  width:100%; padding:13px; background:transparent;
-  border:1.5px solid rgba(126,217,143,0.3); border-radius:var(--radius);
-  color:var(--accent); font-family:'DM Sans',sans-serif;
-  font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s;
-  display:none; align-items:center; justify-content:center; gap:8px;
-}
-.share-btn:hover { background:var(--accent-dim); }
-
-/* RIGHT PANEL */
 .right-panel { display:flex; flex-direction:column; height:calc(100vh - 73px); position:sticky; top:73px; }
 .tabs { display:flex; border-bottom:1px solid var(--border); background:var(--surface); }
 .tab { flex:1; padding:14px; text-align:center; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; }
 .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
 .tab-content { display:none; flex:1; overflow:hidden; flex-direction:column; }
 .tab-content.active { display:flex; }
-
-/* CHAT */
 .chat-messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px; scrollbar-width:thin; scrollbar-color:var(--surface3) transparent; }
 .msg { display:flex; gap:10px; align-items:flex-start; animation:fadeUp 0.3s ease; }
 .msg.user { flex-direction:row-reverse; }
@@ -176,8 +142,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .chat-input::placeholder { color:var(--muted); }
 .send-btn { width:38px; height:38px; border-radius:10px; background:var(--accent); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; flex-shrink:0; color:#0A0C0B; font-weight:bold; }
 .send-btn:hover { background:#92E8A3; }
-
-/* SKINCARE PANEL */
 .skincare-panel { flex:1; overflow-y:auto; padding:0; display:flex; flex-direction:column; scrollbar-width:thin; scrollbar-color:var(--surface3) transparent; }
 .personalized-banner { margin:16px 16px 0; background:linear-gradient(135deg, rgba(126,217,143,0.15) 0%, rgba(126,217,143,0.05) 100%); border:1px solid rgba(126,217,143,0.25); border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:12px; }
 .personalized-banner-icon { font-size:24px; flex-shrink:0; }
@@ -250,33 +214,20 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .reminder-delete:hover { color:var(--danger); }
 .add-reminder-btn { width:100%; padding:12px; background:transparent; border:1.5px dashed rgba(126,217,143,0.25); border-radius:var(--radius); color:var(--accent); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; }
 .add-reminder-btn:hover { background:var(--accent-dim); }
-
-/* ═══ PROGRESS TRACKING TAB ═══ */
 .progress-panel { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:16px; scrollbar-width:thin; scrollbar-color:var(--surface3) transparent; }
 .progress-empty { text-align:center; padding:40px 20px; color:var(--muted); }
 .progress-empty-icon { font-size:40px; margin-bottom:12px; }
 .progress-empty-title { font-size:15px; font-weight:600; color:var(--text); margin-bottom:6px; }
 .progress-empty-sub { font-size:13px; line-height:1.5; }
-.progress-score-card {
-  background:linear-gradient(135deg, rgba(126,217,143,0.15), rgba(126,217,143,0.05));
-  border:1px solid rgba(126,217,143,0.25); border-radius:16px; padding:20px;
-}
+.progress-score-card { background:linear-gradient(135deg, rgba(126,217,143,0.15), rgba(126,217,143,0.05)); border:1px solid rgba(126,217,143,0.25); border-radius:16px; padding:20px; }
 .progress-score-label { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
 .progress-score-value { font-family:'Fraunces',serif; font-size:48px; font-weight:600; color:var(--accent); line-height:1; margin-bottom:4px; }
 .progress-score-sub { font-size:12px; color:var(--muted); }
 .progress-trend { display:flex; align-items:center; gap:6px; margin-top:8px; font-size:13px; font-weight:600; }
-.trend-up { color:var(--accent); }
-.trend-down { color:var(--danger); }
-.trend-same { color:var(--muted); }
-.progress-timeline { display:flex; flex-direction:column; gap:10px; }
-.progress-timeline-title { font-size:13px; font-weight:600; margin-bottom:4px; }
-.scan-entry {
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:12px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start;
-  cursor:pointer; transition:all 0.2s;
-}
+.trend-up { color:var(--accent); } .trend-down { color:var(--danger); } .trend-same { color:var(--muted); }
+.scan-entry { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start; cursor:pointer; transition:all 0.2s; }
 .scan-entry:hover { border-color:rgba(126,217,143,0.2); }
-.scan-entry-img { width:48px; height:48px; border-radius:8px; object-fit:cover; flex-shrink:0; background:var(--surface3); display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; }
+.scan-entry-img { width:48px; height:48px; border-radius:8px; flex-shrink:0; background:var(--surface3); display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; }
 .scan-entry-img img { width:100%; height:100%; object-fit:cover; }
 .scan-entry-info { flex:1; }
 .scan-entry-diagnosis { font-size:13px; font-weight:600; margin-bottom:2px; }
@@ -285,8 +236,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .scan-entry-fill { height:100%; border-radius:2px; background:var(--accent); transition:width 0.8s ease; }
 .scan-entry-conf { font-size:11px; color:var(--muted); margin-top:4px; }
 .scan-sev-badge { padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; display:inline-block; }
-
-/* POPUPS & MODALS */
 .skincare-popup { display:none; position:fixed; bottom:30px; right:30px; z-index:150; background:var(--surface); border:1px solid rgba(126,217,143,0.3); border-radius:16px; padding:20px 24px; width:300px; box-shadow:var(--shadow); animation:slideUp 0.4s ease; }
 .skincare-popup.open { display:block; }
 @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
@@ -334,7 +283,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .camera-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:16px; background:linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%); pointer-events:none; }
 .camera-hint { font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:8px; }
 .camera-ring { width:60px; height:60px; border-radius:50%; border:3px solid rgba(126,217,143,0.5); animation:pulse-ring 2s infinite; position:absolute; top:50%; left:50%; transform:translate(-50%,-60%); }
-@keyframes pulse-ring { 0%,100%{ box-shadow:0 0 0 0 rgba(126,217,143,0.4); } 50%{ box-shadow:0 0 0 12px rgba(126,217,143,0); } }
+@keyframes pulse-ring { 0%,100%{box-shadow:0 0 0 0 rgba(126,217,143,0.4)} 50%{box-shadow:0 0 0 12px rgba(126,217,143,0)} }
 .capture-btn { width:100%; padding:14px; background:var(--accent); color:#0A0C0B; border:none; border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.2s; display:none; align-items:center; justify-content:center; gap:8px; margin-top:10px; }
 .capture-btn.visible { display:flex; }
 .capture-btn:hover { background:#92E8A3; }
@@ -343,8 +292,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .camera-controls { display:flex; gap:8px; margin-top:8px; }
 .cam-ctrl-btn { flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--muted); font-size:12px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
 .cam-ctrl-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.15); }
-
-/* PRE-SCAN MODAL */
 .prescan-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82); backdrop-filter:blur(8px); z-index:300; align-items:center; justify-content:center; padding:20px; }
 .prescan-overlay.open { display:flex; }
 .prescan-modal { background:var(--surface); border:1px solid rgba(126,217,143,0.2); border-radius:20px; width:540px; max-width:95vw; max-height:90vh; overflow-y:auto; animation:fadeUp 0.35s ease; scrollbar-width:thin; scrollbar-color:var(--surface3) transparent; box-shadow:0 40px 80px rgba(0,0,0,0.6); }
@@ -379,8 +326,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .prescan-btn-skip { padding:14px 18px; background:transparent; border:1.5px solid var(--border); border-radius:12px; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
 .prescan-btn-skip:hover { border-color:rgba(255,255,255,0.15); color:var(--text); }
 .prescan-skip-note { font-size:11.5px; color:var(--muted); text-align:center; margin-top:10px; opacity:0.7; }
-
-/* SHARE MODAL */
 .share-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); z-index:200; align-items:center; justify-content:center; }
 .share-modal.open { display:flex; }
 .share-modal-box { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px; width:440px; max-width:92vw; animation:fadeUp 0.3s ease; }
@@ -407,6 +352,20 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     <a href="/history" class="nav-link">📋 History</a>
     <a href="/find-dermat" class="nav-link">📍 Find Dermat</a>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+
+    <!-- ✅ User chip with signout dropdown — INSIDE header-nav -->
+    <div class="user-chip" id="userChip" onclick="this.classList.toggle('open')">
+      <div class="user-chip-initial" id="userInitial">?</div>
+      <img id="userAvatar" src="" alt="" style="display:none;">
+      <span class="user-chip-name" id="userChipName"></span>
+      <div class="signout-dropdown" id="signoutDropdown">
+        <div class="signout-dropdown-name" id="signoutEmail"></div>
+        <button class="signout-btn" onclick="signOutUser(event)">
+          🚪 Sign out
+        </button>
+      </div>
+    </div>
+
     <div class="header-badge">AI Dermatologist</div>
   </div>
 </header>
@@ -505,8 +464,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
       <div class="tab" onclick="switchTab('skincare',this)">✨ Skin Care</div>
       <div class="tab" onclick="switchTab('progress',this)">📈 Progress</div>
     </div>
-
-    <!-- CHAT TAB -->
     <div class="tab-content active" id="tab-chat">
       <div class="chat-messages" id="chatMessages">
         <div class="msg"><div class="msg-avatar">🤖</div><div class="msg-bubble">Hi! I'm DermAI 👋 Upload a skin photo and I'll analyze it, or ask me anything about your skin!</div></div>
@@ -525,8 +482,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
         <button class="send-btn" onclick="sendMessage()">↑</button>
       </div>
     </div>
-
-    <!-- SKINCARE TAB -->
     <div class="tab-content" id="tab-skincare">
       <div class="skincare-panel">
         <div id="personalizedBanner" style="display:none;" class="personalized-banner">
@@ -593,14 +548,12 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
         </div>
       </div>
     </div>
-
-    <!-- PROGRESS TAB -->
     <div class="tab-content" id="tab-progress">
       <div class="progress-panel" id="progressPanel">
-        <div class="progress-empty" id="progressEmpty">
+        <div class="progress-empty">
           <div class="progress-empty-icon">📈</div>
           <div class="progress-empty-title">No scans yet</div>
-          <div class="progress-empty-sub">Scan karo aur week by week progress track karo. AI batayega skin improve ho rahi hai ya nahi!</div>
+          <div class="progress-empty-sub">Scan karo aur week by week progress track karo!</div>
         </div>
       </div>
     </div>
@@ -704,7 +657,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
       <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:600;">📤 Share Diagnosis</div>
       <button onclick="document.getElementById('shareModal').classList.remove('open')" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
     </div>
-    <div class="share-card" id="shareCard">
+    <div class="share-card">
       <div style="font-size:11px;color:#6B7A6D;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">🔬 DermaCam AI Analysis</div>
       <div class="share-card-title" id="sc-diagnosis">—</div>
       <div class="share-card-sub" id="sc-sciname">—</div>
@@ -712,7 +665,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
       <div class="share-card-row"><span class="share-card-label">Confidence</span><span class="share-card-value" id="sc-confidence">—</span></div>
       <div class="share-card-row"><span class="share-card-label">Category</span><span class="share-card-value" id="sc-category">—</span></div>
       <div class="share-card-row"><span class="share-card-label">Date</span><span class="share-card-value" id="sc-date">—</span></div>
-      <div class="share-card-footer">⚕️ AI analysis only — not a medical diagnosis. Consult a dermatologist.</div>
+      <div class="share-card-footer">⚕️ AI analysis only — not a medical diagnosis.</div>
     </div>
     <div class="share-options">
       <button class="share-opt-btn" onclick="copyShareText()">📋 Copy Text</button>
@@ -723,7 +676,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
   </div>
 </div>
 
-<!-- OTHER MODALS -->
 <div class="skincare-popup" id="skincarePopup">
   <button class="popup-close" onclick="closePopup()">✕</button>
   <div class="popup-title">✨ Want skincare tips?</div>
@@ -759,37 +711,101 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
-// ══════════════════════════════════════════════
-// SERVICE WORKER REGISTRATION
-// ══════════════════════════════════════════════
-let swRegistration = null;
-let reminderCheckInterval = null;
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
+<script>
+// ── Auth Guard + Firebase ───────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyBJcwi0mMESVrVNe2V3G2mpfwA1vx0RCUc",
+  authDomain: "dermacam-928db.firebaseapp.com",
+  projectId: "dermacam-928db",
+  storageBucket: "dermacam-928db.firebasestorage.app",
+  messagingSenderId: "646497755655",
+  appId: "1:646497755655:web:87ef10c9789522e0ddc0a2"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// Check localStorage first for instant UI (no flash)
+const cachedUser = JSON.parse(localStorage.getItem('dermacam-user') || 'null');
+if (!cachedUser) window.location.href = '/login';
+else initUserChip(cachedUser);
+
+// Firebase auth state — source of truth
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    localStorage.removeItem('dermacam-user');
+    window.location.href = '/login';
+  } else {
+    const userData = { uid:user.uid, name:user.displayName, email:user.email, photo:user.photoURL };
+    localStorage.setItem('dermacam-user', JSON.stringify(userData));
+    initUserChip(userData);
+  }
+});
+
+function initUserChip(user) {
+  const chip = document.getElementById('userChip');
+  const initial = document.getElementById('userInitial');
+  const avatar = document.getElementById('userAvatar');
+  const chipName = document.getElementById('userChipName');
+  const signoutEmail = document.getElementById('signoutEmail');
+  chip.style.display = 'flex';
+  chipName.textContent = (user.name || '').split(' ')[0] || 'User';
+  signoutEmail.textContent = user.email || '';
+  if (user.photo) {
+    avatar.src = user.photo;
+    avatar.style.display = 'block';
+    initial.style.display = 'none';
+  } else {
+    initial.textContent = (user.name || 'U')[0].toUpperCase();
+  }
+}
+
+async function signOutUser(e) {
+  e.stopPropagation();
+  await auth.signOut();
+  localStorage.removeItem('dermacam-user');
+  localStorage.removeItem('dermacam-has-logged-in');
+  window.location.href = '/login';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const chip = document.getElementById('userChip');
+  if (!chip.contains(e.target)) chip.classList.remove('open');
+});
+
+// ── Service Worker ──────────────────────────────────────────
+let swRegistration = null;
 async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   try {
     swRegistration = await navigator.serviceWorker.register('/sw.js');
-    console.log('✅ Service Worker registered');
-    // Ping SW every minute to check reminders
-    reminderCheckInterval = setInterval(() => {
-      if (swRegistration?.active) {
-        swRegistration.active.postMessage({ type: 'CHECK_REMINDERS' });
-      }
-    }, 60 * 1000);
-    // Check immediately on load too
-    setTimeout(() => {
-      swRegistration?.active?.postMessage({ type: 'CHECK_REMINDERS' });
-    }, 2000);
-  } catch(e) {
-    console.warn('SW registration failed:', e);
+    setInterval(() => swRegistration?.active?.postMessage({ type:'CHECK_REMINDERS' }), 60000);
+    setTimeout(() => swRegistration?.active?.postMessage({ type:'CHECK_REMINDERS' }), 2000);
+  } catch(e) { console.warn('SW failed:', e); }
+
+  navigator.serviceWorker.addEventListener('message', e => {
+  if (e.data?.type === 'PLAY_NOTIFICATION_SOUND') {
+    const ctx = new AudioContext();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.setValueAtTime(520, ctx.currentTime);
+    o.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+    o.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
+    g.gain.setValueAtTime(0.3, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    o.start(ctx.currentTime);
+    o.stop(ctx.currentTime + 0.5);
   }
+});
 }
 registerSW();
 
-// ══════════════════════════════════════════════
-// THEME TOGGLE
-// ══════════════════════════════════════════════
+// ── Theme ───────────────────────────────────────────────────
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
@@ -797,26 +813,19 @@ function toggleTheme() {
   document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
   localStorage.setItem('dermacam-theme', isDark ? 'light' : 'dark');
 }
-// Restore saved theme
 const savedTheme = localStorage.getItem('dermacam-theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
 document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
 
-// ══════════════════════════════════════════════
-// CORE STATE
-// ══════════════════════════════════════════════
-let currentDiagnosis = null;
-let patientData = {};
+// ── Core state ──────────────────────────────────────────────
+let currentDiagnosis = null, patientData = {};
 let reminders = JSON.parse(localStorage.getItem('dermacam-reminders-list') || '[]');
 const SESSION_ID = 'user_' + Math.random().toString(36).slice(2,8);
 
-// ══════════════════════════════════════════════
-// PRE-SCAN FORM
-// ══════════════════════════════════════════════
+// ── Pre-scan form ───────────────────────────────────────────
 function selectPill(el, groupId) {
   document.querySelectorAll(`#${groupId} .pill:not(.multi)`).forEach(p => p.classList.remove('selected'));
-  el.classList.toggle('selected');
-  updateAccuracy();
+  el.classList.toggle('selected'); updateAccuracy();
 }
 function togglePill(el) { el.classList.toggle('selected'); updateAccuracy(); }
 function getSelectedPills(groupId) {
@@ -837,16 +846,11 @@ function updateAccuracy() {
   document.getElementById('accuracyPct').textContent = score + '%';
 }
 function analyzeImage() {
-  const fi = document.getElementById('fileInput');
-  if (!fi.files[0]) return;
+  if (!document.getElementById('fileInput').files[0]) return;
   document.getElementById('prescanModal').classList.add('open');
   updateAccuracy();
 }
-function skipPrescan() {
-  patientData = {};
-  document.getElementById('prescanModal').classList.remove('open');
-  runAnalysis();
-}
+function skipPrescan() { patientData = {}; document.getElementById('prescanModal').classList.remove('open'); runAnalysis(); }
 function submitPrescan() {
   patientData = {
     age: document.getElementById('pf-age').value || 'not provided',
@@ -863,9 +867,7 @@ function submitPrescan() {
 }
 document.getElementById('prescanModal').addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
 
-// ══════════════════════════════════════════════
-// ANALYSIS
-// ══════════════════════════════════════════════
+// ── Analysis ────────────────────────────────────────────────
 async function runAnalysis() {
   const fi = document.getElementById('fileInput');
   if (!fi.files[0]) return;
@@ -891,9 +893,7 @@ async function runAnalysis() {
   }
 }
 
-// ══════════════════════════════════════════════
-// SHARE DIAGNOSIS
-// ══════════════════════════════════════════════
+// ── Share ───────────────────────────────────────────────────
 function openShareModal() {
   if (!currentDiagnosis) return;
   const d = currentDiagnosis;
@@ -902,213 +902,111 @@ function openShareModal() {
   document.getElementById('sc-severity').textContent = (d.severity||'—').charAt(0).toUpperCase()+(d.severity||'').slice(1);
   document.getElementById('sc-confidence').textContent = (d.confidence||0) + '%';
   document.getElementById('sc-category').textContent = d.category || '—';
-  document.getElementById('sc-date').textContent = new Date().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('sc-date').textContent = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
   document.getElementById('shareModal').classList.add('open');
 }
 function getShareText() {
   const d = currentDiagnosis;
-  return `🔬 DermaCam AI Skin Analysis\n\nCondition: ${d.diagnosis}\nSeverity: ${d.severity}\nConfidence: ${d.confidence}%\n\nWhat is this: ${d.what_is_this}\n\nHome Remedies: ${d.home_remedies}\n\nOTC Medicine: ${d.medicine}\n\n⚕️ This is AI analysis only — not a medical diagnosis. Always consult a dermatologist.\n\nAnalyzed by DermaCam 🔬`;
+  return `🔬 DermaCam AI Skin Analysis\n\nCondition: ${d.diagnosis}\nSeverity: ${d.severity}\nConfidence: ${d.confidence}%\n\nWhat is this: ${d.what_is_this}\n\nHome Remedies: ${d.home_remedies}\n\nOTC Medicine: ${d.medicine}\n\n⚕️ AI analysis only. Always consult a dermatologist.\n\nAnalyzed by DermaCam 🔬`;
 }
-function copyShareText() {
-  navigator.clipboard.writeText(getShareText()).then(() => {
-    showToast('✅ Copied to clipboard!');
-    document.getElementById('shareModal').classList.remove('open');
-  });
-}
-function shareWhatsApp() {
-  const text = encodeURIComponent(getShareText());
-  window.open(`https://wa.me/?text=${text}`, '_blank');
-}
-function shareNative() {
-  if (navigator.share) {
-    navigator.share({ title:'DermaCam Diagnosis', text:getShareText() });
-  } else {
-    copyShareText();
-  }
-}
+function copyShareText() { navigator.clipboard.writeText(getShareText()).then(()=>{ showToast('✅ Copied!'); document.getElementById('shareModal').classList.remove('open'); }); }
+function shareWhatsApp() { window.open(`https://wa.me/?text=${encodeURIComponent(getShareText())}`, '_blank'); }
+function shareNative() { navigator.share ? navigator.share({title:'DermaCam',text:getShareText()}) : copyShareText(); }
 function downloadShareCard() {
-  const d = currentDiagnosis;
-  const text = getShareText();
-  const blob = new Blob([text], { type:'text/plain' });
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `dermacam-${(d.diagnosis||'diagnosis').replace(/\s+/g,'-').toLowerCase()}.txt`;
-  a.click();
-  showToast('⬇️ Downloaded!');
+  a.href = URL.createObjectURL(new Blob([getShareText()],{type:'text/plain'}));
+  a.download = `dermacam-${(currentDiagnosis.diagnosis||'diagnosis').replace(/\s+/g,'-').toLowerCase()}.txt`;
+  a.click(); showToast('⬇️ Downloaded!');
 }
 document.getElementById('shareModal').addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
 
-// ══════════════════════════════════════════════
-// PROGRESS TRACKING
-// ══════════════════════════════════════════════
+// ── Progress ────────────────────────────────────────────────
 function renderProgress() {
   const scans = JSON.parse(localStorage.getItem('dermascans') || '[]');
   const panel = document.getElementById('progressPanel');
-  if (scans.length === 0) {
-    panel.innerHTML = `<div class="progress-empty"><div class="progress-empty-icon">📈</div><div class="progress-empty-title">No scans yet</div><div class="progress-empty-sub">Scan karo aur week by week progress track karo!</div></div>`;
-    return;
-  }
-  // Skin Health Score — based on avg confidence & severity trend
+  if (!scans.length) { panel.innerHTML = `<div class="progress-empty"><div class="progress-empty-icon">📈</div><div class="progress-empty-title">No scans yet</div><div class="progress-empty-sub">Scan karo aur week by week progress track karo!</div></div>`; return; }
   const latest = scans[0];
   const sevScore = { mild:85, moderate:60, severe:35 };
   const baseScore = Math.round(((sevScore[latest.severity]||60) + (latest.confidence||50)) / 2);
-  // Trend: compare latest vs previous
   let trendHTML = '';
   if (scans.length > 1) {
     const prev = scans[1];
     const prevScore = Math.round(((sevScore[prev.severity]||60) + (prev.confidence||50)) / 2);
     const diff = baseScore - prevScore;
     if (diff > 0) trendHTML = `<div class="progress-trend trend-up">▲ +${diff} from last scan — improving! 🎉</div>`;
-    else if (diff < 0) trendHTML = `<div class="progress-trend trend-down">▼ ${diff} from last scan — needs attention</div>`;
+    else if (diff < 0) trendHTML = `<div class="progress-trend trend-down">▼ ${diff} from last scan</div>`;
     else trendHTML = `<div class="progress-trend trend-same">→ Same as last scan</div>`;
   }
-
   const sevColors = { mild:'rgba(126,217,143,0.15)', moderate:'rgba(244,201,122,0.15)', severe:'rgba(240,112,112,0.15)' };
   const sevTextColors = { mild:'var(--accent)', moderate:'var(--warn)', severe:'var(--danger)' };
-
   const timelineHTML = scans.slice(0,10).map((s,i) => {
-    const date = new Date(s.date).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
+    const date = new Date(s.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
     const conf = s.confidence || 0;
-    const imgHTML = s.imgData
-      ? `<img src="${s.imgData}" style="width:100%;height:100%;object-fit:cover;">`
-      : `<span style="font-size:20px;">🩺</span>`;
-    return `<div class="scan-entry" onclick="showScanDetail(${i})">
-      <div class="scan-entry-img">${imgHTML}</div>
-      <div class="scan-entry-info">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-          <div class="scan-entry-diagnosis">${s.diagnosis||'Unknown'}</div>
-          <span class="scan-sev-badge" style="background:${sevColors[s.severity]||sevColors.moderate};color:${sevTextColors[s.severity]||sevTextColors.moderate}">${s.severity||'—'}</span>
-        </div>
-        <div class="scan-entry-date">📅 ${date} ${i===0?'<span style="color:var(--accent);font-weight:600;">← Latest</span>':''}</div>
-        <div class="scan-entry-bar"><div class="scan-entry-fill" style="width:${conf}%;background:${conf>=75?'var(--accent)':conf>=50?'var(--warn)':'var(--danger)'}"></div></div>
-        <div class="scan-entry-conf">AI Confidence: ${conf}%</div>
-      </div>
-    </div>`;
+    const imgHTML = s.imgData ? `<img src="${s.imgData}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:20px;">🩺</span>`;
+    return `<div class="scan-entry"><div class="scan-entry-img">${imgHTML}</div><div class="scan-entry-info"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;"><div class="scan-entry-diagnosis">${s.diagnosis||'Unknown'}</div><span class="scan-sev-badge" style="background:${sevColors[s.severity]||sevColors.moderate};color:${sevTextColors[s.severity]||sevTextColors.moderate}">${s.severity||'—'}</span></div><div class="scan-entry-date">📅 ${date} ${i===0?'<span style="color:var(--accent);font-weight:600;">← Latest</span>':''}</div><div class="scan-entry-bar"><div class="scan-entry-fill" style="width:${conf}%;background:${conf>=75?'var(--accent)':conf>=50?'var(--warn)':'var(--danger)'}"></div></div><div class="scan-entry-conf">AI Confidence: ${conf}%</div></div></div>`;
   }).join('');
+  panel.innerHTML = `<div class="progress-score-card"><div class="progress-score-label">🏥 Current Skin Health Score</div><div class="progress-score-value">${baseScore}</div><div class="progress-score-sub">out of 100 — based on your latest scan</div>${trendHTML}</div><div style="font-size:13px;color:var(--muted);padding:4px 0 8px;">${scans.length} scan${scans.length>1?'s':''} total</div><div class="progress-timeline">${timelineHTML}</div><button onclick="clearAllScans()" style="margin-top:8px;padding:10px;width:100%;background:transparent;border:1px solid rgba(240,112,112,0.2);border-radius:10px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;">🗑️ Clear all scan history</button>`;
+}
+function clearAllScans() { if(!confirm('Delete all scan history?')) return; localStorage.removeItem('dermascans'); renderProgress(); showToast('🗑️ Cleared'); }
 
-  panel.innerHTML = `
-    <div class="progress-score-card">
-      <div class="progress-score-label">🏥 Current Skin Health Score</div>
-      <div class="progress-score-value">${baseScore}</div>
-      <div class="progress-score-sub">out of 100 — based on your latest scan</div>
-      ${trendHTML}
-    </div>
-    <div style="font-size:13px;color:var(--muted);padding:4px 0 8px;">
-      ${scans.length} scan${scans.length>1?'s':''} total · Last ${Math.min(scans.length,10)} shown
-    </div>
-    <div class="progress-timeline">${timelineHTML}</div>
-    <button onclick="clearAllScans()" style="margin-top:8px;padding:10px;width:100%;background:transparent;border:1px solid rgba(240,112,112,0.2);border-radius:10px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;">🗑️ Clear all scan history</button>
-  `;
-}
-function showScanDetail(index) {
-  const scans = JSON.parse(localStorage.getItem('dermascans') || '[]');
-  const s = scans[index];
-  if (!s) return;
-  showToast(`📋 ${s.diagnosis} — ${s.severity} — ${s.confidence}% confidence`);
-}
-function clearAllScans() {
-  if (!confirm('Delete all scan history?')) return;
-  localStorage.removeItem('dermascans');
-  renderProgress();
-  showToast('🗑️ Scan history cleared');
-}
-
-// ══════════════════════════════════════════════
-// REMINDERS — with Service Worker
-// ══════════════════════════════════════════════
+// ── Reminders ───────────────────────────────────────────────
+const activeTimers = {};
 function saveReminder() {
   const type = document.getElementById('reminderType').value;
   const time = document.getElementById('reminderTime').value;
   const freq = document.getElementById('reminderFreq').value;
-  const reminder = { type, time, freq, id: Date.now(), startDay: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()] };
-
-  // Save to localStorage for display
+  const reminder = { type, time, freq, id:Date.now(), startDay:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()] };
   reminders.push(reminder);
   localStorage.setItem('dermacam-reminders-list', JSON.stringify(reminders));
   renderReminders();
   document.getElementById('reminderModal').classList.remove('open');
-
-  // Request notification permission
   if ('Notification' in window) {
-    Notification.requestPermission().then(permission => {
-      if (permission === 'granted') {
-        // Save to Service Worker IndexedDB
-        if (swRegistration?.active) {
-          swRegistration.active.postMessage({ type: 'SAVE_REMINDER', reminder });
-        }
-        // Fallback: in-tab interval check
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') {
+        swRegistration?.active?.postMessage({ type:'SAVE_REMINDER', reminder });
         scheduleInTabReminder(reminder);
-        showToast(`✅ Reminder set! Aayega ${time} pe — tab band ho toh bhi 🔔`);
-      } else {
-        showToast('⚠️ Notification permission denied. Browser settings mein allow karo.');
-      }
+        showToast(`✅ Reminder set for ${time} 🔔`);
+      } else showToast('⚠️ Notifications denied in browser settings');
     });
   }
 }
-
-// In-tab fallback reminder (works when tab is open)
-const activeTimers = {};
-function scheduleInTabReminder(reminder) {
-  if (activeTimers[reminder.id]) clearInterval(activeTimers[reminder.id]);
-  activeTimers[reminder.id] = setInterval(() => {
+function scheduleInTabReminder(r) {
+  if (activeTimers[r.id]) clearInterval(activeTimers[r.id]);
+  activeTimers[r.id] = setInterval(() => {
     const now = new Date();
-    const hh = now.getHours().toString().padStart(2,'0');
-    const mm = now.getMinutes().toString().padStart(2,'0');
-    if (`${hh}:${mm}` === reminder.time) {
-      new Notification(`DermaCam 🔬 — ${reminder.type}`, {
-        body: `Time for your ${reminder.type}! ✨`,
-        icon: '/static/icon.png',
-      });
-    }
-  }, 60 * 1000);
+    const t = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    if (t === r.time) new Notification(`DermaCam 🔬 — ${r.type}`, { body:`Time for your ${r.type}! ✨` });
+  }, 60000);
 }
-
-// Restore reminders on page load
-reminders.forEach(r => {
-  if (swRegistration?.active) swRegistration.active.postMessage({ type: 'SAVE_REMINDER', reminder: r });
-  scheduleInTabReminder(r);
-});
-
+reminders.forEach(r => { swRegistration?.active?.postMessage({ type:'SAVE_REMINDER', reminder:r }); scheduleInTabReminder(r); });
 function renderReminders() {
-  document.getElementById('remindersList').innerHTML = reminders.map(r => `
-    <div class="reminder-item">
-      <div><div style="font-size:13px;font-weight:500;">⏰ ${r.type}</div><div class="reminder-time-text">${r.time} · ${r.freq}</div></div>
-      <button class="reminder-delete" onclick="deleteReminder(${r.id})">✕</button>
-    </div>`).join('');
+  document.getElementById('remindersList').innerHTML = reminders.map(r => `<div class="reminder-item"><div><div style="font-size:13px;font-weight:500;">⏰ ${r.type}</div><div class="reminder-time-text">${r.time} · ${r.freq}</div></div><button class="reminder-delete" onclick="deleteReminder(${r.id})">✕</button></div>`).join('');
 }
 function deleteReminder(id) {
   reminders = reminders.filter(r => r.id !== id);
   localStorage.setItem('dermacam-reminders-list', JSON.stringify(reminders));
-  if (swRegistration?.active) swRegistration.active.postMessage({ type: 'DELETE_REMINDER', id });
+  swRegistration?.active?.postMessage({ type:'DELETE_REMINDER', id });
   if (activeTimers[id]) { clearInterval(activeTimers[id]); delete activeTimers[id]; }
-  renderReminders();
-  showToast('Reminder removed');
+  renderReminders(); showToast('Reminder removed');
 }
 renderReminders();
 
-// ══════════════════════════════════════════════
-// DEFAULT DATA
-// ══════════════════════════════════════════════
+// ── Default data ────────────────────────────────────────────
 const defaultRoutines = {
   morning: [
-    { name:'Cleanse', product:'CeraVe Hydrating Cleanser', tip:'Use lukewarm water. Massage 60 seconds. Pat dry.', time:'~1 min' },
-    { name:'Tone (Optional)', product:'Hada Labo Toner', tip:'Apply with hands, pat gently.', time:'~30 sec' },
-    { name:'Treat', product:'The Ordinary Niacinamide 10%', tip:'2-3 drops. Helps with pores, oil, and uneven tone.', time:'~1 min' },
-    { name:'Moisturize', product:'Neutrogena Hydro Boost Gel', tip:'Pea-sized amount. Seal in hydration.', time:'~1 min' },
-    { name:'Sunscreen ☀️', product:'La Roche-Posay SPF 50+', tip:'Last step, always! 2 finger lengths for face.', time:'~1 min' },
+    { name:'Cleanse', product:'CeraVe Hydrating Cleanser', tip:'Lukewarm water. 60 sec. Pat dry.', time:'~1 min' },
+    { name:'Treat', product:'The Ordinary Niacinamide 10%', tip:'2-3 drops. Pores, oil, uneven tone.', time:'~1 min' },
+    { name:'Moisturize', product:'Neutrogena Hydro Boost Gel', tip:'Pea-sized. Seal in hydration.', time:'~1 min' },
+    { name:'Sunscreen ☀️', product:'La Roche-Posay SPF 50+', tip:'Last step always! 2 finger lengths.', time:'~1 min' },
   ],
   evening: [
-    { name:'Double Cleanse', product:'Banila Co Clean It Zero + CeraVe', tip:'Oil cleanser first to remove SPF/makeup.', time:'~2 min' },
-    { name:'Exfoliate (2-3x/week)', product:"Paula's Choice BHA 2%", tip:'Apply on dry skin, wait 20 mins.', time:'~1 min' },
-    { name:'Treat', product:'Retinol 0.25% or Vit C serum', tip:'Alternate retinol & Vit C on different nights.', time:'~1 min' },
+    { name:'Double Cleanse', product:'Banila Co + CeraVe', tip:'Oil cleanser first, then water-based.', time:'~2 min' },
+    { name:'Treat', product:'Retinol 0.25% or Vit C', tip:'Alternate on different nights.', time:'~1 min' },
     { name:'Moisturize', product:'CeraVe Moisturising Cream', tip:'Apply on slightly damp skin.', time:'~1 min' },
-    { name:'Eye Cream', product:"Kiehl's Avocado Eye Cream", tip:'Ring finger only. Gentle tapping motions.', time:'~30 sec' },
   ],
   weekly: [
-    { name:'Face Mask', product:'Innisfree Super Volcanic Clay Mask', tip:'1-2x/week for oily skin.', time:'15 min' },
-    { name:'Gua Sha / Massage', product:'Rose Quartz Gua Sha', tip:'After moisturizer. Upward strokes.', time:'5 min' },
-    { name:'Scalp Care', product:'Ketoconazole 2% Shampoo', tip:'Leave on 5 mins before rinsing.', time:'5 min' },
-    { name:'Lip Treatment', product:'Laneige Lip Sleeping Mask', tip:'Apply thick layer overnight, 2-3x/week.', time:'~1 min' },
+    { name:'Face Mask', product:'Innisfree Volcanic Clay Mask', tip:'1-2x/week. 10-15 mins.', time:'15 min' },
+    { name:'Gua Sha', product:'Rose Quartz Gua Sha', tip:'After moisturizer. Upward strokes.', time:'5 min' },
   ]
 };
 const defaultProducts = [
@@ -1118,35 +1016,33 @@ const defaultProducts = [
   { emoji:'🌿', name:'Vanicream Moisturizer', type:'Moisturizer', badge:'Sensitive Skin' },
 ];
 const defaultIngredients = {
-  good: ['Niacinamide', 'Ceramides', 'Hyaluronic Acid', 'Centella Asiatica', 'Panthenol (Vit B5)', 'SPF (daily!)'],
+  good: ['Niacinamide', 'Ceramides', 'Hyaluronic Acid', 'Centella Asiatica', 'Panthenol', 'SPF (daily!)'],
   bad: ['Fragrance / Parfum', 'Alcohol Denat', 'SLS / SLES', 'Essential Oils', 'Mineral Oil', 'Parabens']
 };
 const homeRemedyDB = {
-  acne: [{e:'🍋',name:'Lemon + Honey Mask',desc:'Antibacterial + brightening.',how:'1 tsp honey + few lemon drops. 10 min. 2x/week.'},{e:'🌿',name:'Neem Paste',desc:'Powerful antibacterial.',how:'Grind neem + water. Spots 15 min. Rinse.'},{e:'🧊',name:'Ice Cube',desc:'Reduces redness instantly.',how:'Wrap ice in cloth. 1 min on pimple. Repeat.'},{e:'🫚',name:'Tea Tree Oil',desc:'Natural antiseptic.',how:'1 drop in 9 drops oil. Spot apply night.'}],
-  pigmentation: [{e:'🥔',name:'Potato Juice',desc:'Natural bleaching agent.',how:'Grate potato, squeeze. Apply 20 min daily.'},{e:'🍅',name:'Tomato Pulp',desc:'Lycopene fades pigmentation.',how:'Fresh pulp on face. 15 min. Cold water rinse.'},{e:'🌹',name:'Rose Water + Glycerin',desc:'Hydrates + evens tone.',how:'Mix equal parts. Apply nightly.'},{e:'☀️',name:'Orange Peel Mask',desc:'Vit C brightens naturally.',how:'Orange peel powder + honey. 10 min. 3x/week.'}],
-  eczema: [{e:'🥣',name:'Oatmeal Bath',desc:'Soothes itch instantly.',how:'1 cup colloidal oatmeal in lukewarm bath. 15-20 min.'},{e:'🥥',name:'Coconut Oil',desc:'Antimicrobial + moisturizing.',how:'Virgin coconut oil after bath. Leave on.'},{e:'🍵',name:'Chamomile Compress',desc:'Anti-inflammatory.',how:'Cool chamomile tea. Cloth. Apply 10 min.'},{e:'🧈',name:'Shea Butter',desc:'Deep barrier repair.',how:'Pure shea butter on dry patches before sleep.'}],
-  aging: [{e:'🥑',name:'Avocado Mask',desc:'Vit E + healthy fats.',how:'Mash avocado + honey. 20 min. Rinse.'},{e:'🍯',name:'Honey + Turmeric',desc:'Anti-aging + brightening.',how:'1 tsp honey + pinch turmeric. 15 min. 3x/week.'},{e:'🌹',name:'Rose Hip Oil',desc:'Natural retinol alternative.',how:'2-3 drops after moisturizer. Every night.'},{e:'🥛',name:'Milk + Saffron',desc:'Lactic acid + brightness.',how:'2 saffron strands in 2 tbsp milk. 20 min.'}],
-  default: [{e:'🍯',name:'Raw Honey',desc:'Antibacterial + healing.',how:'Apply on affected area. 20 min. Rinse gently.'},{e:'🌿',name:'Aloe Vera Gel',desc:'Cooling, anti-inflammatory.',how:'Fresh aloe gel. Apply freely. Leave on.'},{e:'🧊',name:'Cold Compress',desc:'Reduces inflammation.',how:'Cold cloth. 10 min. Repeat as needed.'},{e:'🥥',name:'Coconut Oil',desc:'Moisturizes + antimicrobial.',how:'Thin layer on clean skin.'}]
+  acne: [{e:'🍋',name:'Lemon + Honey Mask',desc:'Antibacterial + brightening.',how:'1 tsp honey + few lemon drops. 10 min. 2x/week.'},{e:'🌿',name:'Neem Paste',desc:'Powerful antibacterial.',how:'Grind neem + water. 15 min. Rinse.'},{e:'🧊',name:'Ice Cube',desc:'Reduces redness instantly.',how:'Wrap in cloth. 1 min on pimple.'},{e:'🫚',name:'Tea Tree Oil',desc:'Natural antiseptic.',how:'1 drop in 9 drops oil. Spot apply night.'}],
+  pigmentation: [{e:'🥔',name:'Potato Juice',desc:'Natural bleaching.',how:'Grate potato, squeeze. 20 min daily.'},{e:'🍅',name:'Tomato Pulp',desc:'Lycopene fades spots.',how:'Fresh pulp. 15 min. Cold rinse.'},{e:'🌹',name:'Rose Water + Glycerin',desc:'Hydrates + evens tone.',how:'Mix equal parts. Apply nightly.'},{e:'☀️',name:'Orange Peel Mask',desc:'Vit C brightens.',how:'Orange peel powder + honey. 10 min.'}],
+  eczema: [{e:'🥣',name:'Oatmeal Bath',desc:'Soothes itch.',how:'1 cup colloidal oatmeal. 15-20 min.'},{e:'🥥',name:'Coconut Oil',desc:'Antimicrobial.',how:'Virgin coconut oil after bath.'},{e:'🍵',name:'Chamomile Compress',desc:'Anti-inflammatory.',how:'Cool chamomile tea. Cloth. 10 min.'},{e:'🧈',name:'Shea Butter',desc:'Barrier repair.',how:'On dry patches before sleep.'}],
+  aging: [{e:'🥑',name:'Avocado Mask',desc:'Vit E plumps.',how:'Mash + honey. 20 min.'},{e:'🍯',name:'Honey + Turmeric',desc:'Anti-aging.',how:'1 tsp honey + pinch turmeric. 15 min.'},{e:'🌹',name:'Rose Hip Oil',desc:'Natural retinol.',how:'2-3 drops after moisturizer.'},{e:'🥛',name:'Milk + Saffron',desc:'Lactic acid.',how:'2 saffron strands in 2 tbsp milk. 20 min.'}],
+  default: [{e:'🍯',name:'Raw Honey',desc:'Antibacterial + healing.',how:'20 min. Rinse gently.'},{e:'🌿',name:'Aloe Vera Gel',desc:'Cooling, anti-inflammatory.',how:'Fresh aloe. Apply freely.'},{e:'🧊',name:'Cold Compress',desc:'Reduces inflammation.',how:'10 min. Repeat as needed.'},{e:'🥥',name:'Coconut Oil',desc:'Moisturizes.',how:'Thin layer on clean skin.'}]
 };
 const conditionRoutines = {
   acne: {
     morning: [
-      { name:'Cleanser', product:'CeraVe Foaming (Salicylic Acid)', tip:"Removes excess oil. Don't over-cleanse.", time:'~1 min' },
-      { name:'Tone', product:"Paula's Choice BHA 2%", tip:'Problem areas only. Unclogs pores.', time:'~30 sec' },
+      { name:'Cleanser', product:'CeraVe Foaming (Salicylic Acid)', tip:"Don't over-cleanse.", time:'~1 min' },
       { name:'Treat', product:'Niacinamide 10% + Zinc', tip:'Reduces oil and inflammation.', time:'~1 min' },
-      { name:'Moisturize', product:'Neutrogena Oil-Free', tip:'Non-comedogenic. Light gel texture.', time:'~1 min' },
-      { name:'Sunscreen', product:'La Roche-Posay Anthelios SPF 50', tip:'Non-comedogenic SPF. Must for acne meds!', time:'~1 min' },
+      { name:'Moisturize', product:'Neutrogena Oil-Free', tip:'Non-comedogenic.', time:'~1 min' },
+      { name:'Sunscreen', product:'La Roche-Posay Anthelios SPF 50', tip:'Non-comedogenic SPF!', time:'~1 min' },
     ],
     evening: [
-      { name:'Cleanse', product:'CeraVe Foaming Cleanser', tip:'Remove oil and pollution.', time:'~1 min' },
-      { name:'Spot Treat', product:'Benzoyl Peroxide 2.5%', tip:'ONLY on active spots. White pillowcase.', time:'~30 sec' },
-      { name:'Retinoid', product:'Adapalene 0.1% (Differin)', tip:'Start 2x/week. Purging normal first 4-6 weeks.', time:'~1 min' },
-      { name:'Moisturize', product:'CeraVe PM Lotion', tip:'Always moisturize even if oily.', time:'~1 min' },
+      { name:'Cleanse', product:'CeraVe Foaming', tip:'Remove oil and pollution.', time:'~1 min' },
+      { name:'Spot Treat', product:'Benzoyl Peroxide 2.5%', tip:'ONLY on active spots.', time:'~30 sec' },
+      { name:'Retinoid', product:'Adapalene 0.1%', tip:'Start 2x/week. Purging normal.', time:'~1 min' },
+      { name:'Moisturize', product:'CeraVe PM Lotion', tip:'Always moisturize.', time:'~1 min' },
     ],
     weekly: [
-      { name:'Clay Mask', product:'Innisfree Volcanic Clay Mask', tip:'1-2x/week. Draws out sebum.', time:'15 min' },
-      { name:'Chemical Exfoliate', product:'The Ordinary AHA 30% + BHA 2%', tip:'Once a week MAX.', time:'10 min' },
-      { name:'Change Pillowcase', product:'Clean cotton pillowcase', tip:'Every 2-3 days! Bacteria = breakouts.', time:'2 min' },
+      { name:'Clay Mask', product:'Innisfree Volcanic', tip:'1-2x/week.', time:'15 min' },
+      { name:'Change Pillowcase', product:'Clean cotton', tip:'Every 2-3 days!', time:'2 min' },
     ],
     products: [
       { emoji:'🧼', name:'CeraVe Foaming Cleanser', type:'Cleanser', badge:'Best for Acne' },
@@ -1154,34 +1050,32 @@ const conditionRoutines = {
       { emoji:'🎯', name:'Benzoyl Peroxide 2.5%', type:'Spot Treatment', badge:'Kills Bacteria' },
       { emoji:'✨', name:'Niacinamide 10% + Zinc', type:'Serum', badge:'Oil Control' },
     ],
-    good: ['Salicylic Acid (BHA)', 'Benzoyl Peroxide', 'Niacinamide', 'Adapalene', 'Zinc', 'Non-comedogenic SPF'],
-    bad: ['Coconut Oil', 'Algae extracts', 'Heavy occlusives', 'Fragrance', 'Alcohol Denat', 'Isopropyl Myristate']
+    good: ['Salicylic Acid', 'Benzoyl Peroxide', 'Niacinamide', 'Adapalene', 'Zinc', 'Non-comedogenic SPF'],
+    bad: ['Coconut Oil', 'Algae extracts', 'Heavy occlusives', 'Fragrance', 'Alcohol Denat']
   },
   eczema: {
     morning: [
-      { name:'Gentle Cleanse', product:'Dove Sensitive Soap-Free', tip:'Lukewarm water ONLY.', time:'~1 min' },
-      { name:'Moisturize FAST', product:'CeraVe Moisturising Cream', tip:'"3 min rule" — apply within 3 min of washing.', time:'~2 min' },
-      { name:'Treat (flare)', product:'Hydrocortisone 1%', tip:'Thin layer only. Max 7 days continuous.', time:'~1 min' },
-      { name:'Sunscreen', product:'EltaMD UV Clear SPF 46', tip:'Mineral sunscreen only.', time:'~1 min' },
+      { name:'Gentle Cleanse', product:'Dove Sensitive', tip:'Lukewarm ONLY.', time:'~1 min' },
+      { name:'Moisturize FAST', product:'CeraVe Moisturising', tip:'"3 min rule".', time:'~2 min' },
+      { name:'Treat', product:'Hydrocortisone 1%', tip:'Thin layer. Max 7 days.', time:'~1 min' },
+      { name:'Sunscreen', product:'EltaMD UV Clear SPF 46', tip:'Mineral only.', time:'~1 min' },
     ],
     evening: [
-      { name:'Soak & Seal', product:'5-10 min lukewarm bath', tip:"Pat dry, leave slightly damp.", time:'10 min' },
-      { name:'Treat', product:'Tacrolimus / Hydrocortisone', tip:'Apply while skin is still damp.', time:'~1 min' },
-      { name:'Heavy Moisturize', product:'Vaseline Petroleum Jelly', tip:'Thick layer over damp skin.', time:'~2 min' },
-      { name:'Antihistamine', product:'Cetirizine 10mg', tip:'Take at night for itch relief.', time:'Oral' },
+      { name:'Soak & Seal', product:'Lukewarm bath', tip:'Pat dry, leave damp.', time:'10 min' },
+      { name:'Treat', product:'Tacrolimus / Hydrocortisone', tip:'Apply while damp.', time:'~1 min' },
+      { name:'Heavy Moisturize', product:'Vaseline', tip:'Thick layer.', time:'~2 min' },
     ],
     weekly: [
-      { name:'Identify Triggers', product:'Trigger diary', tip:'Fabrics, soaps, pets, stress, dust mites.', time:'Ongoing' },
-      { name:'Wash Bedding', product:'Fragrance-free detergent', tip:'Hot wash weekly. Dust mites = trigger.', time:'1 hr' },
+      { name:'Wash Bedding', product:'Fragrance-free detergent', tip:'Hot wash weekly.', time:'1 hr' },
     ],
     products: [
       { emoji:'🧴', name:'CeraVe Moisturising Cream', type:'Moisturizer', badge:'Barrier Repair' },
-      { emoji:'🕯️', name:'Vaseline Petroleum Jelly', type:'Occlusive', badge:'Seal in moisture' },
+      { emoji:'🕯️', name:'Vaseline Petroleum Jelly', type:'Occlusive', badge:'Seal moisture' },
       { emoji:'💊', name:'Cetirizine 10mg', type:'Antihistamine', badge:'For itch' },
       { emoji:'☀️', name:'EltaMD UV Clear SPF 46', type:'Sunscreen', badge:'Mineral only' },
     ],
-    good: ['Ceramides', 'Colloidal Oatmeal', 'Shea Butter', 'Panthenol', 'Glycerin', 'Mineral SPF'],
-    bad: ['Fragrance', 'SLS / SLES', 'Essential Oils', 'Alcohol Denat', 'Dyes', 'Preservatives (MCI)']
+    good: ['Ceramides', 'Colloidal Oatmeal', 'Shea Butter', 'Panthenol', 'Glycerin'],
+    bad: ['Fragrance', 'SLS', 'Essential Oils', 'Alcohol Denat', 'Dyes']
   }
 };
 
@@ -1192,43 +1086,19 @@ renderProducts(defaultProducts);
 renderIngredients(defaultIngredients.good, defaultIngredients.bad);
 renderProgress();
 
-function renderSteps(containerId, steps, numClass) {
-  document.getElementById(containerId).innerHTML = steps.map((s,i) => `
-    <div class="step-item">
-      <div class="step-left"><div class="step-number ${numClass}">${i+1}</div><div class="step-line"></div></div>
-      <div class="step-content">
-        <div class="step-name">${s.name}</div>
-        <div class="step-product">${s.product}</div>
-        <div class="step-tip">${s.tip}</div>
-        <div class="step-time">⏱ ${s.time}</div>
-      </div>
-    </div>`).join('');
+function renderSteps(id, steps, numClass) {
+  document.getElementById(id).innerHTML = steps.map((s,i) => `<div class="step-item"><div class="step-left"><div class="step-number ${numClass}">${i+1}</div><div class="step-line"></div></div><div class="step-content"><div class="step-name">${s.name}</div><div class="step-product">${s.product}</div><div class="step-tip">${s.tip}</div><div class="step-time">⏱ ${s.time}</div></div></div>`).join('');
 }
 function renderProducts(products) {
-  document.getElementById('productsGrid').innerHTML = products.map(p => `
-    <div class="product-card" onclick="showToast('${p.name} noted!')">
-      <div class="product-emoji">${p.emoji}</div>
-      <div class="product-name">${p.name}</div>
-      <div class="product-type">${p.type}</div>
-      <span class="product-badge">${p.badge}</span>
-    </div>`).join('');
+  document.getElementById('productsGrid').innerHTML = products.map(p => `<div class="product-card" onclick="showToast('${p.name} noted!')"><div class="product-emoji">${p.emoji}</div><div class="product-name">${p.name}</div><div class="product-type">${p.type}</div><span class="product-badge">${p.badge}</span></div>`).join('');
 }
 function renderIngredients(good, bad) {
   document.getElementById('ingrGood').innerHTML = good.map(i => `<div class="ingr-item">✓ ${i}</div>`).join('');
   document.getElementById('ingrBad').innerHTML = bad.map(i => `<div class="ingr-item">✗ ${i}</div>`).join('');
 }
 function renderHomeRemedies(d) {
-  const diag = (d.diagnosis||'').toLowerCase();
-  const key = Object.keys(homeRemedyDB).find(k => k !== 'default' && diag.includes(k)) || 'default';
-  document.getElementById('remediesList').innerHTML = homeRemedyDB[key].map(r => `
-    <div class="remedy-card">
-      <div class="remedy-emoji">${r.e}</div>
-      <div style="flex:1">
-        <div class="remedy-name">${r.name}</div>
-        <div class="remedy-desc">${r.desc}</div>
-        <div class="remedy-how">📋 ${r.how}</div>
-      </div>
-    </div>`).join('');
+  const key = Object.keys(homeRemedyDB).find(k => k !== 'default' && (d.diagnosis||'').toLowerCase().includes(k)) || 'default';
+  document.getElementById('remediesList').innerHTML = homeRemedyDB[key].map(r => `<div class="remedy-card"><div class="remedy-emoji">${r.e}</div><div style="flex:1"><div class="remedy-name">${r.name}</div><div class="remedy-desc">${r.desc}</div><div class="remedy-how">📋 ${r.how}</div></div></div>`).join('');
 }
 function switchTime(time) {
   document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active','morning','evening','weekly'));
@@ -1236,143 +1106,88 @@ function switchTime(time) {
   document.getElementById('btn'+time[0].toUpperCase()+time.slice(1)).classList.add('active', time);
   document.getElementById('view-'+time).classList.add('active');
 }
-
 function resetScan() {
-  document.getElementById('previewImg').style.display = 'none';
-  document.getElementById('previewImg').src = '';
-  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('previewImg').style.display='none'; document.getElementById('previewImg').src='';
+  document.getElementById('uploadPlaceholder').style.display='block';
   document.getElementById('uploadZone').classList.remove('has-image');
-  document.getElementById('fileInput').value = '';
-  document.getElementById('analyzeBtn').disabled = true;
-  document.getElementById('analyzeBtn').style.display = 'flex';
-  document.getElementById('refreshBtn').style.display = 'none';
-  document.getElementById('shareBtn').style.display = 'none';
-  document.getElementById('resultCard').style.display = 'none';
-  document.getElementById('loading').style.display = 'none';
-  currentDiagnosis = null; patientData = {};
-  document.getElementById('personalizedBanner').style.display = 'none';
+  document.getElementById('fileInput').value='';
+  document.getElementById('analyzeBtn').disabled=true; document.getElementById('analyzeBtn').style.display='flex';
+  document.getElementById('refreshBtn').style.display='none'; document.getElementById('shareBtn').style.display='none';
+  document.getElementById('resultCard').style.display='none'; document.getElementById('loading').style.display='none';
+  currentDiagnosis=null; patientData={};
+  document.getElementById('personalizedBanner').style.display='none';
   renderSteps('morningSteps', defaultRoutines.morning, 'morning-num');
   renderSteps('eveningSteps', defaultRoutines.evening, 'evening-num');
   renderSteps('weeklySteps', defaultRoutines.weekly, 'weekly-num');
-  renderProducts(defaultProducts);
-  renderIngredients(defaultIngredients.good, defaultIngredients.bad);
-  document.getElementById('remediesList').innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0;text-align:center;">Scan karo — personalized home remedies milenge 🌿</div>';
-  document.getElementById('chatSuggestions').innerHTML = `
-    <div class="suggestion-chip" onclick="sendSuggestion(this)">What is this rash?</div>
-    <div class="suggestion-chip" onclick="sendSuggestion(this)">Is it contagious?</div>
-    <div class="suggestion-chip" onclick="sendSuggestion(this)">Do I need a dermat?</div>
-    <div class="suggestion-chip" onclick="sendSuggestion(this)">How long to heal?</div>
-    <div class="suggestion-chip" onclick="sendSuggestion(this)">What causes acne?</div>`;
-  document.querySelector('.left-panel').scrollTo({ top:0, behavior:'smooth' });
+  renderProducts(defaultProducts); renderIngredients(defaultIngredients.good, defaultIngredients.bad);
+  document.getElementById('remediesList').innerHTML='<div style="font-size:13px;color:var(--muted);padding:12px 0;text-align:center;">Scan karo — personalized home remedies milenge 🌿</div>';
+  document.getElementById('chatSuggestions').innerHTML=`<div class="suggestion-chip" onclick="sendSuggestion(this)">What is this rash?</div><div class="suggestion-chip" onclick="sendSuggestion(this)">Is it contagious?</div><div class="suggestion-chip" onclick="sendSuggestion(this)">Do I need a dermat?</div><div class="suggestion-chip" onclick="sendSuggestion(this)">How long to heal?</div><div class="suggestion-chip" onclick="sendSuggestion(this)">What causes acne?</div>`;
+  document.querySelector('.left-panel').scrollTo({top:0,behavior:'smooth'});
   showToast('✨ Ready for a new scan!');
 }
-
 function switchMode(mode) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('mode'+mode[0].toUpperCase()+mode.slice(1)).classList.add('active');
-  if (mode === 'upload') {
-    document.getElementById('uploadZone').style.display = 'flex';
-    document.getElementById('cameraZone').style.display = 'none';
-    document.getElementById('cameraControls').style.display = 'none';
-    document.getElementById('captureBtn').classList.remove('visible');
-    stopCamera();
-  } else {
-    document.getElementById('uploadZone').style.display = 'none';
-    document.getElementById('cameraZone').style.display = 'block';
-  }
+  if (mode==='upload') { document.getElementById('uploadZone').style.display='flex'; document.getElementById('cameraZone').style.display='none'; document.getElementById('cameraControls').style.display='none'; document.getElementById('captureBtn').classList.remove('visible'); stopCamera(); }
+  else { document.getElementById('uploadZone').style.display='none'; document.getElementById('cameraZone').style.display='block'; }
 }
-
-let cameraStream = null, facingMode = 'environment';
+let cameraStream=null, facingMode='environment';
 async function startCamera() {
   try {
     cameraStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode, width:{ideal:1280}, height:{ideal:720} } });
-    const v = document.getElementById('cameraFeed');
-    v.srcObject = cameraStream; v.style.display = 'block';
-    document.getElementById('cameraPlaceholder').style.display = 'none';
-    document.getElementById('cameraRing').style.display = 'block';
-    document.getElementById('cameraOverlay').style.display = 'flex';
-    document.getElementById('cameraControls').style.display = 'flex';
+    const v=document.getElementById('cameraFeed'); v.srcObject=cameraStream; v.style.display='block';
+    document.getElementById('cameraPlaceholder').style.display='none';
+    document.getElementById('cameraRing').style.display='block';
+    document.getElementById('cameraOverlay').style.display='flex';
+    document.getElementById('cameraControls').style.display='flex';
     document.getElementById('captureBtn').classList.add('visible');
-    document.getElementById('analyzeBtn').style.display = 'none';
-    showToast('📷 Camera ready — hold steady!');
+    document.getElementById('analyzeBtn').style.display='none';
+    showToast('📷 Camera ready!');
   } catch(e) { showToast('❌ Camera access denied.'); }
 }
 function stopCamera() {
   if (cameraStream) { cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
-  const v = document.getElementById('cameraFeed');
-  v.style.display='none'; v.srcObject=null;
+  const v=document.getElementById('cameraFeed'); v.style.display='none'; v.srcObject=null;
   document.getElementById('cameraPlaceholder').style.display='block';
   document.getElementById('cameraRing').style.display='none';
   document.getElementById('cameraOverlay').style.display='none';
   document.getElementById('cameraControls').style.display='none';
   document.getElementById('captureBtn').classList.remove('visible');
 }
-async function flipCamera() {
-  facingMode = facingMode==='environment'?'user':'environment';
-  stopCamera(); await startCamera();
-  showToast(facingMode==='user'?'🤳 Front camera':'📷 Back camera');
-}
+async function flipCamera() { facingMode=facingMode==='environment'?'user':'environment'; stopCamera(); await startCamera(); }
 function capturePhoto() {
   const v=document.getElementById('cameraFeed'), c=document.getElementById('cameraCanvas');
-  c.width=v.videoWidth; c.height=v.videoHeight;
-  c.getContext('2d').drawImage(v,0,0);
-  const fl=document.createElement('div');
-  fl.style.cssText='position:fixed;inset:0;background:white;opacity:0.8;z-index:999;pointer-events:none;transition:opacity 0.3s';
-  document.body.appendChild(fl);
+  c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0);
+  const fl=document.createElement('div'); fl.style.cssText='position:fixed;inset:0;background:white;opacity:0.8;z-index:999;pointer-events:none;transition:opacity 0.3s'; document.body.appendChild(fl);
   setTimeout(()=>{fl.style.opacity='0';setTimeout(()=>fl.remove(),300);},100);
   c.toBlob(blob=>{
-    const url=URL.createObjectURL(blob);
-    const img=document.getElementById('previewImg'); img.src=url;
+    const img=document.getElementById('previewImg'); img.src=URL.createObjectURL(blob); 
     const file=new File([blob],'camera_scan.jpg',{type:'image/jpeg'});
-    const dt=new DataTransfer(); dt.items.add(file);
-    document.getElementById('fileInput').files=dt.files;
+    const dt=new DataTransfer(); dt.items.add(file); document.getElementById('fileInput').files=dt.files;
     stopCamera();
-    document.getElementById('cameraZone').style.display='none';
-    document.getElementById('uploadZone').style.display='flex';
-    document.getElementById('uploadZone').classList.add('has-image');
-    document.getElementById('uploadPlaceholder').style.display='none';
-    img.style.display='block';
-    document.getElementById('captureBtn').classList.remove('visible');
-    document.getElementById('analyzeBtn').style.display='flex';
-    document.getElementById('analyzeBtn').disabled=false;
-    showToast('✅ Photo captured!');
-    setTimeout(()=>analyzeImage(),800);
+    document.getElementById('cameraZone').style.display='none'; document.getElementById('uploadZone').style.display='flex';
+    document.getElementById('uploadZone').classList.add('has-image'); document.getElementById('uploadPlaceholder').style.display='none';
+    img.style.display='block'; document.getElementById('captureBtn').classList.remove('visible');
+    document.getElementById('analyzeBtn').style.display='flex'; document.getElementById('analyzeBtn').disabled=false;
+    showToast('✅ Photo captured!'); setTimeout(()=>analyzeImage(),800);
   },'image/jpeg',0.92);
 }
-
 function handleUpload(event) {
-  const file = event.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = document.getElementById('previewImg');
-    img.src=e.target.result; img.style.display='block';
-    document.getElementById('uploadPlaceholder').style.display='none';
-    document.getElementById('uploadZone').classList.add('has-image');
-    document.getElementById('analyzeBtn').disabled=false;
-    document.getElementById('refreshBtn').style.display='none';
-    document.getElementById('resultCard').style.display='none';
-  };
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{ const img=document.getElementById('previewImg'); img.src=e.target.result; img.style.display='block'; document.getElementById('uploadPlaceholder').style.display='none'; document.getElementById('uploadZone').classList.add('has-image'); document.getElementById('analyzeBtn').disabled=false; document.getElementById('refreshBtn').style.display='none'; document.getElementById('resultCard').style.display='none'; };
   reader.readAsDataURL(file);
 }
-const uploadZone = document.getElementById('uploadZone');
-uploadZone.addEventListener('dragover', e=>{e.preventDefault();uploadZone.style.borderColor='var(--accent)';});
-uploadZone.addEventListener('dragleave', ()=>{uploadZone.style.borderColor='';});
-uploadZone.addEventListener('drop', e=>{
-  e.preventDefault(); uploadZone.style.borderColor='';
-  const file=e.dataTransfer.files[0];
-  if(file&&file.type.startsWith('image/')){
-    const dt=new DataTransfer(); dt.items.add(file);
-    document.getElementById('fileInput').files=dt.files;
-    handleUpload({target:{files:[file]}});
-  }
-});
+const uploadZone=document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.style.borderColor='var(--accent)';});
+uploadZone.addEventListener('dragleave',()=>{uploadZone.style.borderColor='';});
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.style.borderColor='';const file=e.dataTransfer.files[0];if(file&&file.type.startsWith('image/')){const dt=new DataTransfer();dt.items.add(file);document.getElementById('fileInput').files=dt.files;handleUpload({target:{files:[file]}});}});
 
 function showResult(d) {
-  document.getElementById('diagnosisName').textContent = d.diagnosis||'Unknown';
-  document.getElementById('sciName').textContent = d.scientific_name||'';
-  const conf = Math.round(d.confidence)||0;
-  const bar = document.getElementById('confidenceBar');
-  const ct = document.getElementById('confidenceText');
+  document.getElementById('diagnosisName').textContent=d.diagnosis||'Unknown';
+  document.getElementById('sciName').textContent=d.scientific_name||'';
+  const conf=Math.round(d.confidence)||0;
+  const bar=document.getElementById('confidenceBar'), ct=document.getElementById('confidenceText');
   bar.style.width=conf+'%'; ct.textContent=conf+'%';
   if(conf>=75){bar.style.background='var(--accent)';ct.style.color='var(--accent)';}
   else if(conf>=50){bar.style.background='var(--warn)';ct.style.color='var(--warn)';}
@@ -1397,153 +1212,47 @@ function showResult(d) {
   document.getElementById('shareBtn').style.display='flex';
   document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'nearest'});
   const cat=(d.category||d.diagnosis||'').toLowerCase();
-  const suggMap={
-    'acne':['Kya ye scar karega?','Best spot treatment?','Diet tips for acne?','Benzoyl peroxide safe hai?'],
-    'pigmentation':['Dark spots fade honge?','Best serum?','Kitne time mein results?','Sunscreen enough hai?'],
-    'aging':['Best anti-aging routine?','Retinol safe hai?','Reverse ho sakta hai?','SPF zaruri hai?'],
-    'disease':['Contagious hai kya?','Doctor dikhana chahiye?','Itching kaise rokun?','Kitna time lagega?'],
-    'hair':['Kaunsa shampoo?','Hair wapas ayenge?','Contagious hai?','Diet tips?'],
-    'scalp':['Kaunsa shampoo?','Dandruff ke liye kya?','Weekly treatment?','Doctor dikhana chahiye?'],
-  };
+  const suggMap={'acne':['Kya ye scar karega?','Best spot treatment?','Diet tips?','Benzoyl peroxide safe hai?'],'pigmentation':['Dark spots fade honge?','Best serum?','Kitne time mein results?','Sunscreen enough hai?'],'aging':['Best anti-aging routine?','Retinol safe hai?','SPF zaruri hai?','Reverse ho sakta hai?'],'disease':['Contagious hai?','Doctor dikhana chahiye?','Itching kaise rokun?','Kitna time lagega?'],'hair':['Kaunsa shampoo?','Hair wapas ayenge?','Diet tips?','Doctor chahiye?'],'scalp':['Kaunsa shampoo?','Dandruff ke liye?','Weekly treatment?','Doctor chahiye?']};
   const key=Object.keys(suggMap).find(k=>cat.includes(k));
-  const chips=suggMap[key]||['Ye kitna serious hai?','Best treatment?','Ghar pe kya karun?','Doctor dikhana chahiye?'];
-  document.getElementById('chatSuggestions').innerHTML=chips.map(c=>`<div class="suggestion-chip" onclick="sendSuggestion(this)">${c}</div>`).join('');
+  document.getElementById('chatSuggestions').innerHTML=(suggMap[key]||['Ye kitna serious hai?','Best treatment?','Ghar pe kya karun?','Doctor dikhana chahiye?']).map(c=>`<div class="suggestion-chip" onclick="sendSuggestion(this)">${c}</div>`).join('');
   addBotMessage(`✅ Scan done! **${d.diagnosis}** — ${sev} severity. Koi bhi sawaal puchho! 👇`);
   setTimeout(()=>showSkincarePopup(d.diagnosis),1500);
   updateSkincareForDiagnosis(d);
   saveScanToHistory(d);
   renderProgress();
 }
-
 function updateSkincareForDiagnosis(d) {
-  const key = Object.keys(conditionRoutines).find(k => d.diagnosis.toLowerCase().includes(k));
+  const key=Object.keys(conditionRoutines).find(k=>d.diagnosis.toLowerCase().includes(k));
   document.getElementById('personalizedBanner').style.display='flex';
   document.getElementById('bannerSub').textContent=`Routine customized for: ${d.diagnosis}`;
-  if(key) {
-    const r = conditionRoutines[key];
-    renderSteps('morningSteps', r.morning, 'morning-num');
-    renderSteps('eveningSteps', r.evening, 'evening-num');
-    renderSteps('weeklySteps', r.weekly, 'weekly-num');
-    renderProducts(r.products);
-    renderIngredients(r.good, r.bad);
-  } else {
-    renderIngredients(d.ingredients_use||defaultIngredients.good, d.ingredients_avoid||defaultIngredients.bad);
-  }
+  if(key){const r=conditionRoutines[key];renderSteps('morningSteps',r.morning,'morning-num');renderSteps('eveningSteps',r.evening,'evening-num');renderSteps('weeklySteps',r.weekly,'weekly-num');renderProducts(r.products);renderIngredients(r.good,r.bad);}
+  else{renderIngredients(d.ingredients_use||defaultIngredients.good,d.ingredients_avoid||defaultIngredients.bad);}
   renderHomeRemedies(d);
 }
-
-function renderTags(id,arr,cls){
-  document.getElementById(id).innerHTML=arr.map(t=>`<span class="tag ${cls}">${t}</span>`).join('');
-}
-function showSkincarePopup(diagnosis){
-  document.getElementById('popupSub').textContent=`You have ${diagnosis} — personalized routine ready!`;
-  document.getElementById('skincarePopup').classList.add('open');
-  setTimeout(()=>document.getElementById('skincarePopup').classList.remove('open'),10000);
-}
+function renderTags(id,arr,cls){document.getElementById(id).innerHTML=arr.map(t=>`<span class="tag ${cls}">${t}</span>`).join('');}
+function showSkincarePopup(diagnosis){document.getElementById('popupSub').textContent=`You have ${diagnosis} — personalized routine ready!`;document.getElementById('skincarePopup').classList.add('open');setTimeout(()=>document.getElementById('skincarePopup').classList.remove('open'),10000);}
 function closePopup(){document.getElementById('skincarePopup').classList.remove('open');}
-function showSkincareTab(){
-  closePopup();
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab')[1].classList.add('active');
-  document.getElementById('tab-skincare').classList.add('active');
-}
-function switchTab(tab,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('tab-'+tab).classList.add('active');
-  if(tab==='progress') renderProgress();
-}
-function loadMeds(){
-  const d=currentDiagnosis?.diagnosis?.toLowerCase()||'';
-  document.getElementById('medModalSub').textContent=currentDiagnosis?`Medications for ${currentDiagnosis.diagnosis}`:'Common dermatology medications';
-  document.getElementById('medContent').innerHTML=getMedsForDiagnosis(d);
-}
-function getMedsForDiagnosis(d){
-  let html='';
-  if(d.includes('acne')||d.includes('pih')||d.includes('hyperpigmentation')||d.includes('scar')){
-    html+=medCat('🧴 Topical',[
-      {name:'Benzoyl Peroxide 2.5%',use:'Kills acne bacteria. Apply thin layer at night.',tag:'OTC'},
-      {name:'Clindamycin 1% Gel',use:'Antibiotic gel. Morning use.',tag:'Prescription'},
-      {name:'Adapalene 0.1% (Differin)',use:'Retinoid. Unclogs pores. 3x/week at night.',tag:'OTC'},
-      {name:'Niacinamide 10% Serum',use:'Reduces oil, fades marks. Daily AM or PM.',tag:'OTC'},
-      {name:'Azelaic Acid 10%',use:'Kills bacteria + fades marks. Great for PIH.',tag:'OTC'},
-      {name:'Tranexamic Acid 2-5%',use:'Post-acne hyperpigmentation. AM or PM.',tag:'OTC'},
-    ]);
-    html+=medCat('💊 Oral',[
-      {name:'Doxycycline 100mg',use:'Antibiotic. 2x daily with food. Moderate-severe.',tag:'Prescription'},
-      {name:'Isotretinoin (Accutane)',use:'Severe/cystic only. Needs close monitoring.',tag:'Prescription'},
-    ]);
-  } else if(d.includes('eczema')||d.includes('dermatitis')){
-    html+=medCat('🧴 Topical',[
-      {name:'Hydrocortisone 1% Cream',use:'Mild steroid. Max 1 week continuous.',tag:'OTC'},
-      {name:'Betamethasone 0.1%',use:'Stronger steroid for severe flares.',tag:'Prescription'},
-      {name:'Tacrolimus 0.1%',use:'Non-steroid. Face/sensitive areas.',tag:'Prescription'},
-      {name:'CeraVe Moisturising Cream',use:'Ceramide barrier repair. Use liberally.',tag:'OTC'},
-    ]);
-    html+=medCat('💊 Oral',[
-      {name:'Cetirizine 10mg',use:'Itch relief. Take at night.',tag:'OTC'},
-      {name:'Dupilumab (Dupixent)',use:'Biologic for severe eczema.',tag:'Prescription'},
-    ]);
-  } else {
-    html+=medCat('🧴 General',[
-      {name:'Hydrocortisone 1%',use:'Redness, itching, mild inflammation.',tag:'OTC'},
-      {name:'Cetirizine 10mg',use:'Allergic reactions and itching.',tag:'OTC'},
-      {name:'Clotrimazole 1%',use:'Fungal skin infections.',tag:'OTC'},
-      {name:'Mupirocin 2%',use:'Bacterial skin infections.',tag:'Prescription'},
-      {name:'Calamine Lotion',use:'Soothes itch and redness. All ages.',tag:'OTC'},
-      {name:'Niacinamide 10%',use:'Pigmentation, oil control, barrier.',tag:'OTC'},
-    ]);
-  }
-  html+=`<div style="background:rgba(240,112,112,0.08);border:1px solid rgba(240,112,112,0.15);border-radius:10px;padding:14px;margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.6;">⚕️ <strong style="color:var(--text)">Important:</strong> Prescription medications require a doctor's prescription. Always consult a dermatologist.</div>`;
-  return html;
-}
-function medCat(title,items){
-  return `<div class="med-category"><div class="med-category-title">${title}</div>${items.map(m=>`<div class="med-item"><div class="med-name">${m.name}</div><div class="med-use">${m.use}</div><span class="med-tag ${m.tag==='Prescription'?'med-tag-rx':''}">${m.tag}</span></div>`).join('')}</div>`;
-}
+function showSkincareTab(){closePopup();document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab')[1].classList.add('active');document.getElementById('tab-skincare').classList.add('active');}
+function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('tab-'+tab).classList.add('active');if(tab==='progress')renderProgress();}
+function loadMeds(){const d=currentDiagnosis?.diagnosis?.toLowerCase()||'';document.getElementById('medModalSub').textContent=currentDiagnosis?`Medications for ${currentDiagnosis.diagnosis}`:'Common dermatology medications';document.getElementById('medContent').innerHTML=getMedsForDiagnosis(d);}
+function getMedsForDiagnosis(d){let html='';if(d.includes('acne')||d.includes('pih')||d.includes('hyperpigmentation')||d.includes('scar')){html+=medCat('🧴 Topical',[{name:'Benzoyl Peroxide 2.5%',use:'Kills acne bacteria. Apply at night.',tag:'OTC'},{name:'Clindamycin 1% Gel',use:'Antibiotic gel. Morning use.',tag:'Prescription'},{name:'Adapalene 0.1% (Differin)',use:'Retinoid. 3x/week at night.',tag:'OTC'},{name:'Niacinamide 10%',use:'Reduces oil, fades marks.',tag:'OTC'},{name:'Azelaic Acid 10%',use:'Kills bacteria + fades marks.',tag:'OTC'},{name:'Tranexamic Acid 2-5%',use:'Post-acne hyperpigmentation.',tag:'OTC'}]);html+=medCat('💊 Oral',[{name:'Doxycycline 100mg',use:'2x daily with food.',tag:'Prescription'},{name:'Isotretinoin (Accutane)',use:'Severe/cystic only.',tag:'Prescription'}]);}else if(d.includes('eczema')||d.includes('dermatitis')){html+=medCat('🧴 Topical',[{name:'Hydrocortisone 1%',use:'Mild steroid. Max 1 week.',tag:'OTC'},{name:'Betamethasone 0.1%',use:'Stronger steroid.',tag:'Prescription'},{name:'Tacrolimus 0.1%',use:'Non-steroid. For sensitive areas.',tag:'Prescription'},{name:'CeraVe Moisturising',use:'Ceramide barrier repair.',tag:'OTC'}]);html+=medCat('💊 Oral',[{name:'Cetirizine 10mg',use:'Itch relief at night.',tag:'OTC'},{name:'Dupilumab (Dupixent)',use:'Biologic for severe eczema.',tag:'Prescription'}]);}else{html+=medCat('🧴 General',[{name:'Hydrocortisone 1%',use:'Redness, itching, inflammation.',tag:'OTC'},{name:'Cetirizine 10mg',use:'Allergic reactions.',tag:'OTC'},{name:'Clotrimazole 1%',use:'Fungal infections.',tag:'OTC'},{name:'Mupirocin 2%',use:'Bacterial infections.',tag:'Prescription'},{name:'Calamine Lotion',use:'Soothes itch and redness.',tag:'OTC'},{name:'Niacinamide 10%',use:'Pigmentation, oil control.',tag:'OTC'}]);}html+=`<div style="background:rgba(240,112,112,0.08);border:1px solid rgba(240,112,112,0.15);border-radius:10px;padding:14px;margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.6;">⚕️ <strong style="color:var(--text)">Important:</strong> Prescription medications require a doctor's prescription.</div>`;return html;}
+function medCat(title,items){return `<div class="med-category"><div class="med-category-title">${title}</div>${items.map(m=>`<div class="med-item"><div class="med-name">${m.name}</div><div class="med-use">${m.use}</div><span class="med-tag ${m.tag==='Prescription'?'med-tag-rx':''}">${m.tag}</span></div>`).join('')}</div>`;}
 function sendSuggestion(el){document.getElementById('chatInput').value=el.textContent;sendMessage();}
 async function sendMessage(){
-  const input=document.getElementById('chatInput');
-  const text=input.value.trim(); if(!text) return;
+  const input=document.getElementById('chatInput'); const text=input.value.trim(); if(!text) return;
   addUserMessage(text); input.value=''; input.style.height='auto';
-  const chat=document.getElementById('chatMessages');
-  const typingId='typing-'+Date.now();
+  const chat=document.getElementById('chatMessages'); const typingId='typing-'+Date.now();
   chat.innerHTML+=`<div class="msg" id="${typingId}"><div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>`;
   chat.scrollTop=chat.scrollHeight;
   try {
-    const res=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:text,session_id:SESSION_ID,diagnosis:currentDiagnosis?JSON.stringify(currentDiagnosis):null})});
-    const data=await res.json();
-    document.getElementById(typingId)?.remove();
-    addBotMessage(data.reply);
-  } catch(e) {
-    document.getElementById(typingId)?.remove();
-    addBotMessage('❌ Chatbot not reachable. Make sure app.py is running!');
-  }
+    const res=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,session_id:SESSION_ID,diagnosis:currentDiagnosis?JSON.stringify(currentDiagnosis):null})});
+    const data=await res.json(); document.getElementById(typingId)?.remove(); addBotMessage(data.reply);
+  } catch(e) { document.getElementById(typingId)?.remove(); addBotMessage('❌ Chatbot not reachable.'); }
 }
-function addUserMessage(text){
-  const c=document.getElementById('chatMessages');
-  c.innerHTML+=`<div class="msg user"><div class="msg-avatar">👤</div><div class="msg-bubble">${text}</div></div>`;
-  c.scrollTop=c.scrollHeight;
-}
-function addBotMessage(text){
-  const c=document.getElementById('chatMessages');
-  c.innerHTML+=`<div class="msg"><div class="msg-avatar">🤖</div><div class="msg-bubble">${text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div>`;
-  c.scrollTop=c.scrollHeight;
-}
-function saveScanToHistory(d){
-  const scans=JSON.parse(localStorage.getItem('dermascans')||'[]');
-  const imgData=document.getElementById('previewImg').src;
-  scans.unshift({id:Date.now(),date:new Date().toISOString(),diagnosis:d.diagnosis,scientific_name:d.scientific_name,severity:d.severity,confidence:d.confidence,category:d.category,what_is_this:d.what_is_this,is_serious:d.is_serious,causes:d.causes,symptoms:d.symptoms,home_remedies:d.home_remedies,medicine:d.medicine,doctor_advice:d.doctor_advice,prevention:d.prevention,imgData:imgData.startsWith('data:')?imgData:null});
-  if(scans.length>20) scans.splice(20);
-  localStorage.setItem('dermascans',JSON.stringify(scans));
-}
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2800);
-}
+function addUserMessage(text){const c=document.getElementById('chatMessages');c.innerHTML+=`<div class="msg user"><div class="msg-avatar">👤</div><div class="msg-bubble">${text}</div></div>`;c.scrollTop=c.scrollHeight;}
+function addBotMessage(text){const c=document.getElementById('chatMessages');c.innerHTML+=`<div class="msg"><div class="msg-avatar">🤖</div><div class="msg-bubble">${text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div>`;c.scrollTop=c.scrollHeight;}
+function saveScanToHistory(d){const scans=JSON.parse(localStorage.getItem('dermascans')||'[]');const imgData=document.getElementById('previewImg').src;scans.unshift({id:Date.now(),date:new Date().toISOString(),diagnosis:d.diagnosis,scientific_name:d.scientific_name,severity:d.severity,confidence:d.confidence,category:d.category,what_is_this:d.what_is_this,is_serious:d.is_serious,causes:d.causes,symptoms:d.symptoms,home_remedies:d.home_remedies,medicine:d.medicine,doctor_advice:d.doctor_advice,prevention:d.prevention,imgData:imgData.startsWith('data:')?imgData:null});if(scans.length>20)scans.splice(20);localStorage.setItem('dermascans',JSON.stringify(scans));}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 document.getElementById('reminderModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 document.getElementById('medModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 </script>
