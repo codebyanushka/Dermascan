@@ -10,12 +10,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Groq for chat
+# Groq for chat + image analysis (primary)
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# Gemini for image analysis
+# Gemini for image analysis (fallback only)
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-gemini = genai.GenerativeModel("gemini-2.0-flash")
+gemini = genai.GenerativeModel("gemini-1.5-flash")
 
 print("✅ DermaScan Ready!")
 
@@ -36,15 +36,10 @@ def find_dermat():
     return send_from_directory('.', 'find-dermat.html')
 
 # ─────────────────────────────────────────
-# ANALYZE — Gemini Vision
+# SHARED PROMPT
 # ─────────────────────────────────────────
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    file = request.files['image']
-    image = Image.open(file.stream).convert('RGB')
-
-    prompt = """You are an expert AI dermatologist with deep knowledge across ALL dermatology domains.
+ANALYSIS_PROMPT = """You are an expert AI dermatologist with deep knowledge across ALL dermatology domains.
 Analyze this skin/hair/scalp image carefully and identify every visible condition.
 
 You can detect:
@@ -54,7 +49,7 @@ You can detect:
 - Aging concerns (wrinkles, fine lines, sagging, loss of elasticity, age spots)
 - Hair & scalp issues (dandruff, alopecia, scalp psoriasis, folliculitis)
 
-Return ONLY a valid JSON object, no extra text, no markdown, no code fences:
+Return ONLY a valid JSON object. No extra text, no markdown, no code fences. Just raw JSON:
 {
   "diagnosis": "Primary condition name",
   "scientific_name": "Medical/scientific name",
@@ -75,25 +70,103 @@ Return ONLY a valid JSON object, no extra text, no markdown, no code fences:
   "uncertain": false
 }"""
 
+ERROR_FALLBACK = {
+    "diagnosis": "Analysis Failed",
+    "scientific_name": "",
+    "category": "",
+    "severity": "mild",
+    "confidence": 0,
+    "what_is_this": "The AI could not analyze this image. Please try again with a clearer, well-lit photo.",
+    "is_serious": "Unable to determine — please consult a dermatologist.",
+    "causes": [],
+    "symptoms": [],
+    "home_remedies": "Please try again with a clearer photo.",
+    "medicine": "",
+    "ingredients_use": [],
+    "ingredients_avoid": [],
+    "doctor_advice": "Please consult a qualified dermatologist for an accurate diagnosis.",
+    "prevention": "",
+    "secondary_conditions": [],
+    "uncertain": True
+}
+
+def parse_json(text):
+    """Safely extract and parse JSON from model response."""
+    text = text.strip()
+    text = re.sub(r'^```json\s*', '', text)
+    text = re.sub(r'^```\s*', '', text)
+    text = re.sub(r'\s*```$', '', text)
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if match:
+        return json.loads(match.group())
+    raise ValueError("No valid JSON found in response")
+
+# ─────────────────────────────────────────
+# ANALYZE — Groq Vision (Primary)
+# ─────────────────────────────────────────
+
+def analyze_with_groq(image: Image.Image):
+    buffered = io.BytesIO()
+    image.save(buffered, format="JPEG", quality=85)
+    img_b64 = base64.b64encode(buffered.getvalue()).decode()
+
+    response = groq_client.chat.completions.create(
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}
+                },
+                {
+                    "type": "text",
+                    "text": ANALYSIS_PROMPT
+                }
+            ]
+        }],
+        max_tokens=1500
+    )
+    text = response.choices[0].message.content
+    return parse_json(text)
+
+# ─────────────────────────────────────────
+# ANALYZE — Gemini Vision (Fallback)
+# ─────────────────────────────────────────
+
+def analyze_with_gemini(image: Image.Image):
+    response = gemini.generate_content([ANALYSIS_PROMPT, image])
+    return parse_json(response.text)
+
+# ─────────────────────────────────────────
+# /analyze ROUTE
+# ─────────────────────────────────────────
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    file = request.files['image']
+    image = Image.open(file.stream).convert('RGB')
+
+    # Try Groq first
     try:
-        response = gemini.generate_content([prompt, image])
-        text = response.text.strip()
-
-        # Strip markdown fences if present
-        text = re.sub(r'^```json\s*', '', text)
-        text = re.sub(r'^```\s*', '', text)
-        text = re.sub(r'\s*```$', '', text)
-
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-        if match:
-            result = json.loads(match.group())
-        else:
-            result = {"diagnosis": "Unable to analyze", "error": "Parse error", "raw": text}
-
+        print("🔍 Analyzing with Groq Vision...")
+        result = analyze_with_groq(image)
+        print(f"✅ Groq success: {result.get('diagnosis')}")
+        return jsonify(result)
     except Exception as e:
-        result = {"diagnosis": "Error", "error": str(e)}
+        print(f"⚠️ Groq Vision failed: {e}")
 
-    return jsonify(result)
+    # Fallback to Gemini
+    try:
+        print("🔁 Falling back to Gemini...")
+        result = analyze_with_gemini(image)
+        print(f"✅ Gemini success: {result.get('diagnosis')}")
+        return jsonify(result)
+    except Exception as e:
+        print(f"❌ Gemini also failed: {e}")
+
+    # Both failed
+    return jsonify({**ERROR_FALLBACK, "error": "Both Groq and Gemini failed"})
 
 # ─────────────────────────────────────────
 # CHAT — Groq (fast)
