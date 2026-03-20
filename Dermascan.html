@@ -46,8 +46,6 @@ header {
 .nav-link:hover { color:var(--text); border-color:var(--border); }
 .theme-toggle { width:38px; height:38px; border-radius:10px; background:var(--surface2); border:1px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; flex-shrink:0; }
 .theme-toggle:hover { border-color:rgba(126,217,143,0.4); background:var(--accent-dim); }
-
-/* User chip in header */
 .user-chip {
   display:none; align-items:center; gap:8px;
   background:var(--surface2); border:1px solid var(--border);
@@ -58,12 +56,10 @@ header {
 .user-chip img { width:26px; height:26px; border-radius:50%; border:1.5px solid rgba(126,217,143,0.3); flex-shrink:0; }
 .user-chip-name { font-size:12px; font-weight:500; color:var(--text); max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .user-chip-initial { width:26px; height:26px; border-radius:50%; background:var(--accent-dim); border:1.5px solid rgba(126,217,143,0.3); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--accent); flex-shrink:0; }
-
-/* Signout dropdown */
 .signout-dropdown {
   display:none; position:absolute; top:calc(100% + 8px); right:0;
   background:var(--surface); border:1px solid var(--border);
-  border-radius:12px; padding:8px; min-width:160px;
+  border-radius:12px; padding:8px; min-width:180px;
   box-shadow:var(--shadow); z-index:200; animation:fadeUp 0.2s ease;
 }
 .user-chip:hover .signout-dropdown,
@@ -77,6 +73,14 @@ header {
   display:flex; align-items:center; gap:8px;
 }
 .signout-btn:hover { background:rgba(240,112,112,0.08); }
+.edit-profile-btn {
+  width:100%; padding:8px 10px; background:transparent;
+  border:none; border-radius:8px; color:var(--text);
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500;
+  cursor:pointer; text-align:left; transition:all 0.2s;
+  display:flex; align-items:center; gap:8px; margin-bottom:2px;
+}
+.edit-profile-btn:hover { background:var(--surface2); }
 
 main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73px); position:relative; z-index:1; }
 .left-panel { padding:40px; border-right:1px solid var(--border); display:flex; flex-direction:column; gap:24px; overflow-y:auto; }
@@ -339,6 +343,146 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
 .share-options { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .share-opt-btn { padding:12px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
 .share-opt-btn:hover { border-color:rgba(126,217,143,0.3); color:var(--accent); }
+
+/* ══ PROFILE ONBOARDING ══ */
+.ob-overlay {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,0.88); backdrop-filter:blur(14px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.ob-overlay.open { display:flex; animation:obFadeIn 0.4s ease; }
+@keyframes obFadeIn { from{opacity:0} to{opacity:1} }
+.ob-box {
+  background:var(--surface); border:1px solid rgba(126,217,143,0.15);
+  border-radius:24px; width:100%; max-width:520px; max-height:92vh;
+  overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 32px 80px rgba(0,0,0,0.7);
+  animation:obSlideUp 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes obSlideUp { from{opacity:0;transform:translateY(40px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+.ob-progress { height:3px; background:var(--surface3); flex-shrink:0; }
+.ob-progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),#92E8A3); transition:width 0.5s ease; border-radius:0 3px 3px 0; }
+.ob-head { padding:26px 30px 18px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.ob-badge { display:inline-flex; align-items:center; gap:6px; background:var(--accent-dim); border:1px solid rgba(126,217,143,0.2); color:var(--accent); padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
+.ob-title { font-family:'Fraunces',serif; font-size:25px; font-weight:600; letter-spacing:-0.5px; margin-bottom:4px; }
+.ob-sub { font-size:13px; color:var(--muted); line-height:1.5; }
+.ob-body { flex:1; overflow-y:auto; padding:22px 30px; scrollbar-width:thin; scrollbar-color:var(--surface3) transparent; }
+.ob-step { display:none; }
+.ob-step.active { display:block; animation:stepIn 0.3s ease; }
+@keyframes stepIn { from{opacity:0;transform:translateX(14px)} to{opacity:1;transform:translateX(0)} }
+.ob-foot { padding:18px 30px 22px; border-top:1px solid var(--border); flex-shrink:0; background:var(--surface); }
+.ob-btn-main { width:100%; padding:14px; background:var(--accent); color:#0A0C0B; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; margin-bottom:8px; }
+.ob-btn-main:hover { background:#92E8A3; transform:translateY(-1px); }
+.ob-btn-back { background:none; border:none; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; display:block; margin:0 auto; padding:4px; transition:color 0.2s; }
+.ob-btn-back:hover { color:var(--text); }
+.ob-foot-note { font-size:11px; color:var(--muted); text-align:center; margin-top:8px; opacity:0.6; }
+
+/* Age drum */
+.age-wrap { display:flex; flex-direction:column; align-items:center; gap:14px; }
+.age-big { font-family:'Fraunces',serif; font-size:76px; font-weight:800; color:var(--accent); line-height:1; text-align:center; min-width:140px; transition:all 0.15s; user-select:none; text-shadow:0 0 40px rgba(126,217,143,0.25); }
+.age-big.bump { animation:ageBump 0.18s ease; }
+@keyframes ageBump { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+.age-drum { width:100%; height:196px; position:relative; overflow:hidden; border-radius:14px; border:1px solid var(--border); background:var(--surface2); cursor:grab; user-select:none; }
+.age-drum:active { cursor:grabbing; }
+.age-drum::before,.age-drum::after { content:''; position:absolute; left:0; right:0; height:56px; z-index:2; pointer-events:none; }
+.age-drum::before { top:0; background:linear-gradient(to bottom,var(--surface2),transparent); }
+.age-drum::after { bottom:0; background:linear-gradient(to top,var(--surface2),transparent); }
+.age-sel-line { position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); height:44px; border-top:1.5px solid rgba(126,217,143,0.35); border-bottom:1.5px solid rgba(126,217,143,0.35); background:rgba(126,217,143,0.04); z-index:3; pointer-events:none; }
+.age-items { display:flex; flex-direction:column; align-items:center; padding:76px 0; }
+.age-item { height:44px; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:500; color:var(--muted); width:100%; cursor:pointer; transition:all 0.15s; flex-shrink:0; }
+.age-item.sel { color:var(--text); font-size:24px; font-weight:700; }
+.age-item.near { color:var(--text); opacity:0.55; font-size:18px; }
+.age-quick { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; }
+.age-q-btn { padding:7px 15px; border-radius:20px; font-size:12.5px; font-weight:500; background:var(--surface3); border:1px solid var(--border); color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.age-q-btn:hover,.age-q-btn.act { background:var(--accent-dim); border-color:rgba(126,217,143,0.4); color:var(--accent); }
+
+/* Gender cards */
+.gender-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px; }
+.g-card { background:var(--surface2); border:2px solid var(--border); border-radius:16px; padding:18px 10px; text-align:center; cursor:pointer; transition:all 0.22s; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.g-card:hover { border-color:rgba(126,217,143,0.3); transform:translateY(-2px); }
+.g-card.sel { border-color:rgba(126,217,143,0.6); background:rgba(126,217,143,0.07); transform:translateY(-2px); box-shadow:0 8px 24px rgba(126,217,143,0.1); }
+.g-card.sel .g-label { color:var(--accent); }
+.g-emoji { font-size:34px; }
+.g-label { font-size:13px; font-weight:600; }
+.g-sub { font-size:11px; color:var(--muted); }
+.g-pnts { width:100%; padding:11px; background:var(--surface2); border:1.5px dashed var(--border); border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; text-align:center; }
+.g-pnts:hover,.g-pnts.sel { border-color:rgba(126,217,143,0.4); color:var(--accent); background:var(--accent-dim); }
+
+/* Skin cards */
+.skin-list { display:flex; flex-direction:column; gap:8px; }
+.s-card { background:var(--surface2); border:2px solid var(--border); border-radius:13px; padding:13px 16px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:13px; }
+.s-card:hover { border-color:rgba(126,217,143,0.3); }
+.s-card.sel { border-color:rgba(126,217,143,0.6); background:rgba(126,217,143,0.06); }
+.s-card.sel .s-name { color:var(--accent); }
+.s-swatch { width:34px; height:34px; border-radius:50%; flex-shrink:0; border:2px solid var(--border); }
+.s-name { font-size:14px; font-weight:600; }
+.s-desc { font-size:12px; color:var(--muted); margin-top:2px; }
+
+/* Location step */
+.loc-card { background:var(--surface2); border:2px solid var(--border); border-radius:16px; padding:22px; text-align:center; cursor:pointer; transition:all 0.3s; margin-bottom:14px; }
+.loc-card:hover { border-color:rgba(126,217,143,0.4); }
+.loc-card.granted { border-color:rgba(126,217,143,0.6); background:rgba(126,217,143,0.06); }
+.loc-icon { font-size:44px; display:block; margin-bottom:10px; }
+.loc-title { font-size:16px; font-weight:700; margin-bottom:6px; }
+.loc-desc { font-size:13px; color:var(--muted); line-height:1.6; }
+.loc-status { margin-top:14px; padding:9px 16px; border-radius:20px; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:7px; background:var(--surface3); color:var(--muted); transition:all 0.3s; }
+.loc-status.ok { background:rgba(126,217,143,0.14); color:var(--accent); }
+.loc-status.no { background:rgba(240,112,112,0.1); color:var(--danger); }
+.loc-benefits { display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
+.loc-ben { display:flex; align-items:center; gap:11px; background:var(--surface3); border-radius:10px; padding:9px 13px; font-size:13px; }
+.loc-ben-icon { font-size:17px; flex-shrink:0; }
+.loc-ben-text { color:var(--muted); }
+.loc-ben-text strong { color:var(--text); }
+.loc-skip { display:block; text-align:center; font-size:12.5px; color:var(--muted); cursor:pointer; text-decoration:underline; text-underline-offset:3px; margin-top:4px; }
+.loc-skip:hover { color:var(--text); }
+
+/* Done screen */
+.done-wrap { text-align:center; padding:8px 0; }
+.done-av-wrap { position:relative; display:inline-block; margin-bottom:18px; }
+.done-av { width:76px; height:76px; border-radius:50%; border:3px solid rgba(126,217,143,0.5); background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:30px; overflow:hidden; margin:0 auto; }
+.done-av img { width:100%; height:100%; object-fit:cover; }
+.done-check-badge { position:absolute; bottom:-4px; right:-4px; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#0A0C0B; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; border:3px solid var(--surface); }
+.done-name { font-family:'Fraunces',serif; font-size:26px; font-weight:600; margin-bottom:3px; }
+.done-tag { font-size:13px; color:var(--muted); margin-bottom:20px; }
+.done-summary { background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:14px 18px; text-align:left; }
+.done-row { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); }
+.done-row:last-child { border:none; }
+.done-row-ico { font-size:17px; width:22px; text-align:center; flex-shrink:0; }
+.done-row-lbl { font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.7px; min-width:58px; }
+.done-row-val { font-size:13.5px; font-weight:500; }
+
+/* ══ PROFILE EDIT MODAL ══ */
+.pm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); backdrop-filter:blur(8px); z-index:300; align-items:center; justify-content:center; padding:20px; }
+.pm-overlay.open { display:flex; animation:obFadeIn 0.3s ease; }
+.pm-box { background:var(--surface); border:1px solid rgba(126,217,143,0.15); border-radius:22px; width:100%; max-width:460px; max-height:88vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.6); animation:obSlideUp 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+.pm-head { padding:22px 26px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; flex-shrink:0; }
+.pm-title { font-family:'Fraunces',serif; font-size:21px; font-weight:600; margin-bottom:2px; }
+.pm-sub-text { font-size:12.5px; color:var(--muted); }
+.pm-close-btn { background:none; border:none; color:var(--muted); font-size:21px; cursor:pointer; line-height:1; transition:color 0.2s; }
+.pm-close-btn:hover { color:var(--text); }
+.pm-body { flex:1; overflow-y:auto; padding:18px 26px; scrollbar-width:thin; }
+.pm-av-row { display:flex; align-items:center; gap:14px; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--border); }
+.pm-av { width:58px; height:58px; border-radius:50%; border:2px solid rgba(126,217,143,0.4); background:var(--surface2); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.pm-av img { width:100%; height:100%; object-fit:cover; }
+.pm-uname { font-family:'Fraunces',serif; font-size:17px; font-weight:600; }
+.pm-uemail { font-size:12px; color:var(--muted); margin-top:2px; }
+.pm-sec-lbl { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:11px; }
+.pm-sec { margin-bottom:18px; }
+.pm-fld { margin-bottom:12px; }
+.pm-flbl { font-size:12px; font-weight:600; color:var(--muted); margin-bottom:5px; display:block; letter-spacing:0.4px; }
+.pm-inp,.pm-sel { width:100%; padding:9px 13px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13.5px; outline:none; transition:all 0.2s; -webkit-appearance:none; }
+.pm-inp:focus,.pm-sel:focus { border-color:rgba(126,217,143,0.4); background:var(--surface3); }
+.pm-inp::placeholder { color:var(--muted); }
+.pm-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.pm-pills { display:flex; flex-wrap:wrap; gap:7px; }
+.pm-pill { padding:6px 13px; border-radius:20px; font-size:12.5px; font-weight:500; background:var(--surface2); border:1.5px solid var(--border); color:var(--muted); cursor:pointer; transition:all 0.18s; user-select:none; }
+.pm-pill:hover { border-color:rgba(126,217,143,0.3); color:var(--text); }
+.pm-pill.sel { background:var(--accent-dim); border-color:rgba(126,217,143,0.5); color:var(--accent); font-weight:600; }
+.pm-foot { padding:14px 26px 18px; border-top:1px solid var(--border); display:flex; gap:10px; flex-shrink:0; }
+.pm-save { flex:1; padding:12px; background:var(--accent); color:#0A0C0B; border:none; border-radius:11px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s; }
+.pm-save:hover { background:#92E8A3; transform:translateY(-1px); }
+.pm-cancel { padding:12px 16px; background:transparent; border:1px solid var(--border); border-radius:11px; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:14px; cursor:pointer; transition:all 0.2s; }
+.pm-cancel:hover { border-color:rgba(255,255,255,0.15); color:var(--text); }
 </style>
 </head>
 <body>
@@ -352,20 +496,16 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     <a href="/history" class="nav-link">📋 History</a>
     <a href="/find-dermat" class="nav-link">📍 Find Dermat</a>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
-
-    <!-- ✅ User chip with signout dropdown — INSIDE header-nav -->
     <div class="user-chip" id="userChip" onclick="this.classList.toggle('open')">
       <div class="user-chip-initial" id="userInitial">?</div>
       <img id="userAvatar" src="" alt="" style="display:none;">
       <span class="user-chip-name" id="userChipName"></span>
       <div class="signout-dropdown" id="signoutDropdown">
         <div class="signout-dropdown-name" id="signoutEmail"></div>
-        <button class="signout-btn" onclick="signOutUser(event)">
-          🚪 Sign out
-        </button>
+        <button class="edit-profile-btn" onclick="openProfileModal(event)">✏️ Edit Profile</button>
+        <button class="signout-btn" onclick="signOutUser(event)">🚪 Sign out</button>
       </div>
     </div>
-
     <div class="header-badge">AI Dermatologist</div>
   </div>
 </header>
@@ -422,18 +562,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
         <div class="severity-badge severity-moderate" id="severityBadge">—</div>
       </div>
       <div class="result-body">
-        <div class="result-row">
-          <div class="result-row-icon">📊</div>
-          <div style="flex:1">
-            <div class="result-row-label">AI Confidence</div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
-              <div style="flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;">
-                <div id="confidenceBar" style="height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width 1s ease;"></div>
-              </div>
-              <div id="confidenceText" style="font-size:13px;font-weight:600;color:var(--accent);">0%</div>
-            </div>
-          </div>
-        </div>
+        <div class="result-row"><div class="result-row-icon">📊</div><div style="flex:1"><div class="result-row-label">AI Confidence</div><div style="display:flex;align-items:center;gap:10px;margin-top:6px;"><div style="flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;"><div id="confidenceBar" style="height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width 1s ease;"></div></div><div id="confidenceText" style="font-size:13px;font-weight:600;color:var(--accent);">0%</div></div></div></div>
         <div class="result-row"><div class="result-row-icon">💬</div><div><div class="result-row-label">What is this?</div><div class="result-row-value" id="whatIsThis">—</div></div></div>
         <div class="result-row"><div class="result-row-icon">⚠️</div><div><div class="result-row-label">Is it serious?</div><div class="result-row-value" id="isSerious">—</div></div></div>
         <div class="result-row"><div class="result-row-icon">🔎</div><div><div class="result-row-label">Likely Causes</div><div class="tags" id="causesTags"></div></div></div>
@@ -445,17 +574,10 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
         <div class="uncertain-note" id="uncertainNote" style="display:none;">⚡ <strong>Note:</strong> AI analysis may not be 100% accurate. Consult a dermatologist if symptoms persist.</div>
         <div class="result-row"><div class="result-row-icon">👨‍⚕️</div><div><div class="result-row-label">See a Doctor If...</div><div class="result-row-value" id="doctorAdvice">—</div></div></div>
         <div class="result-row"><div class="result-row-icon">🛡️</div><div><div class="result-row-label">Prevention</div><div class="result-row-value" id="prevention">—</div></div></div>
-        <button onclick="document.getElementById('medModal').classList.add('open');loadMeds()"
-          style="width:100%;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all 0.2s;display:flex;align-items:center;gap:8px;"
-          onmouseover="this.style.borderColor='rgba(126,217,143,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
-          💊 View Medications for this condition →
-        </button>
+        <button onclick="document.getElementById('medModal').classList.add('open');loadMeds()" style="width:100%;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all 0.2s;display:flex;align-items:center;gap:8px;" onmouseover="this.style.borderColor='rgba(126,217,143,0.3)'" onmouseout="this.style.borderColor='var(--border)'">💊 View Medications for this condition →</button>
       </div>
     </div>
-    <div class="disclaimer">
-      <div style="font-size:14px;flex-shrink:0;">⚕️</div>
-      <div>This AI analysis is for informational purposes only and does not constitute medical advice. Always consult a qualified dermatologist.</div>
-    </div>
+    <div class="disclaimer"><div style="font-size:14px;flex-shrink:0;">⚕️</div><div>This AI analysis is for informational purposes only and does not constitute medical advice. Always consult a qualified dermatologist.</div></div>
   </div>
 
   <div class="right-panel">
@@ -476,9 +598,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
         <div class="suggestion-chip" onclick="sendSuggestion(this)">What causes acne?</div>
       </div>
       <div class="chat-input-area">
-        <textarea class="chat-input" id="chatInput" placeholder="Ask about your skin..." rows="1"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
-          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        <textarea class="chat-input" id="chatInput" placeholder="Ask about your skin..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
         <button class="send-btn" onclick="sendMessage()">↑</button>
       </div>
     </div>
@@ -486,10 +606,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
       <div class="skincare-panel">
         <div id="personalizedBanner" style="display:none;" class="personalized-banner">
           <div class="personalized-banner-icon">✨</div>
-          <div>
-            <div class="personalized-banner-title">Personalized for your skin</div>
-            <div class="personalized-banner-sub" id="bannerSub">Routine customized based on your scan</div>
-          </div>
+          <div><div class="personalized-banner-title">Personalized for your skin</div><div class="personalized-banner-sub" id="bannerSub">Routine customized based on your scan</div></div>
         </div>
         <div class="time-toggle">
           <button class="time-btn active morning" id="btnMorning" onclick="switchTime('morning')"><span>☀️</span> Morning</button>
@@ -497,34 +614,19 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
           <button class="time-btn" id="btnWeekly" onclick="switchTime('weekly')"><span>📅</span> Weekly</button>
         </div>
         <div class="routine-view active" id="view-morning">
-          <div class="routine-header">
-            <div class="routine-time-badge morning-badge"><span class="time-dot morning-dot"></span>6:00 – 8:00 AM</div>
-            <div class="routine-title">Morning Routine</div>
-            <div class="routine-sub">Cleanse, protect, and start fresh</div>
-          </div>
+          <div class="routine-header"><div class="routine-time-badge morning-badge"><span class="time-dot morning-dot"></span>6:00 – 8:00 AM</div><div class="routine-title">Morning Routine</div><div class="routine-sub">Cleanse, protect, and start fresh</div></div>
           <div class="steps-timeline" id="morningSteps"></div>
         </div>
         <div class="routine-view" id="view-evening">
-          <div class="routine-header">
-            <div class="routine-time-badge evening-badge"><span class="time-dot evening-dot"></span>9:00 – 10:00 PM</div>
-            <div class="routine-title">Evening Routine</div>
-            <div class="routine-sub">Repair, restore, and recover overnight</div>
-          </div>
+          <div class="routine-header"><div class="routine-time-badge evening-badge"><span class="time-dot evening-dot"></span>9:00 – 10:00 PM</div><div class="routine-title">Evening Routine</div><div class="routine-sub">Repair, restore, and recover overnight</div></div>
           <div class="steps-timeline" id="eveningSteps"></div>
         </div>
         <div class="routine-view" id="view-weekly">
-          <div class="routine-header">
-            <div class="routine-time-badge weekly-badge"><span class="time-dot weekly-dot"></span>2–3x per week</div>
-            <div class="routine-title">Weekly Treatments</div>
-            <div class="routine-sub">Targeted care for long-term results</div>
-          </div>
+          <div class="routine-header"><div class="routine-time-badge weekly-badge"><span class="time-dot weekly-dot"></span>2–3x per week</div><div class="routine-title">Weekly Treatments</div><div class="routine-sub">Targeted care for long-term results</div></div>
           <div class="steps-timeline" id="weeklySteps"></div>
         </div>
         <div class="products-section">
-          <div class="products-header">
-            <div class="products-title">🛒 Top Picks</div>
-            <div class="products-sub">Dermatologist-approved, budget-friendly</div>
-          </div>
+          <div class="products-header"><div class="products-title">🛒 Top Picks</div><div class="products-sub">Dermatologist-approved, budget-friendly</div></div>
           <div class="products-grid" id="productsGrid"></div>
         </div>
         <div class="ingredients-section">
@@ -532,13 +634,8 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
           <div class="ingr-col"><div class="ingr-header bad">❌ Avoid These</div><div class="ingr-list" id="ingrBad"></div></div>
         </div>
         <div class="remedies-section">
-          <div class="remedies-header">
-            <div class="remedies-title">🌿 Home Remedies</div>
-            <div class="remedies-sub">Natural nuskhe — ghar pe try karo</div>
-          </div>
-          <div id="remediesList">
-            <div style="font-size:13px;color:var(--muted);padding:12px 0;text-align:center;">Scan karo — personalized home remedies milenge 🌿</div>
-          </div>
+          <div class="remedies-header"><div class="remedies-title">🌿 Home Remedies</div><div class="remedies-sub">Natural nuskhe — ghar pe try karo</div></div>
+          <div id="remediesList"><div style="font-size:13px;color:var(--muted);padding:12px 0;text-align:center;">Scan karo — personalized home remedies milenge 🌿</div></div>
         </div>
         <div class="reminder-section">
           <div class="reminder-section-title">⏰ Reminders</div>
@@ -550,11 +647,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     </div>
     <div class="tab-content" id="tab-progress">
       <div class="progress-panel" id="progressPanel">
-        <div class="progress-empty">
-          <div class="progress-empty-icon">📈</div>
-          <div class="progress-empty-title">No scans yet</div>
-          <div class="progress-empty-sub">Scan karo aur week by week progress track karo!</div>
-        </div>
+        <div class="progress-empty"><div class="progress-empty-icon">📈</div><div class="progress-empty-title">No scans yet</div><div class="progress-empty-sub">Scan karo aur week by week progress track karo!</div></div>
       </div>
     </div>
   </div>
@@ -571,10 +664,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     <div class="prescan-body">
       <div class="accuracy-bar">
         <div style="font-size:20px;flex-shrink:0;">🎯</div>
-        <div style="flex:1">
-          <div class="accuracy-label">Diagnosis accuracy</div>
-          <div class="accuracy-track"><div class="accuracy-fill" id="accuracyFill"></div></div>
-        </div>
+        <div style="flex:1"><div class="accuracy-label">Diagnosis accuracy</div><div class="accuracy-track"><div class="accuracy-fill" id="accuracyFill"></div></div></div>
         <div class="accuracy-pct" id="accuracyPct">40%</div>
       </div>
       <div class="prescan-section">
@@ -611,7 +701,6 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
       <div class="prescan-section">
         <div class="prescan-section-label">⏱ How long?</div>
         <div class="pill-group" id="pills-duration">
-          <div class="pill" data-val="Just appeared today" onclick="selectPill(this,'pills-duration')">Just now</div>
           <div class="pill" data-val="A few days" onclick="selectPill(this,'pills-duration')">Few days</div>
           <div class="pill" data-val="1 to 2 weeks" onclick="selectPill(this,'pills-duration')">1–2 weeks</div>
           <div class="pill" data-val="1 to 3 months" onclick="selectPill(this,'pills-duration')">1–3 months</div>
@@ -685,6 +774,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     <button class="popup-no" onclick="closePopup()">Not now</button>
   </div>
 </div>
+
 <div class="med-modal" id="medModal">
   <div class="med-modal-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
@@ -694,6 +784,7 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     <div id="medContent"></div>
   </div>
 </div>
+
 <div class="modal-overlay" id="reminderModal">
   <div class="modal">
     <div class="modal-title">Set a Reminder ⏰</div>
@@ -709,14 +800,161 @@ main { display:grid; grid-template-columns:1fr 420px; min-height:calc(100vh - 73
     </div>
   </div>
 </div>
+
+<!-- ══ PROFILE ONBOARDING MODAL ══ -->
+<div class="ob-overlay" id="obOverlay">
+  <div class="ob-box">
+    <div class="ob-progress"><div class="ob-progress-fill" id="obFill" style="width:0%"></div></div>
+    <div class="ob-head">
+      <div class="ob-badge" id="obBadge">Step 1 of 4</div>
+      <div class="ob-title" id="obTitle">How old are you?</div>
+      <div class="ob-sub" id="obSub">Age affects skin conditions — hormones, oil production, healing speed</div>
+    </div>
+    <div class="ob-body">
+
+      <!-- Step 1: Age -->
+      <div class="ob-step active" id="ob-step-1">
+        <div class="age-wrap">
+          <div>
+            <div class="age-big" id="ageBig">22</div>
+            <div style="text-align:center;font-size:13px;color:var(--muted);">years old</div>
+          </div>
+          <div class="age-drum" id="ageDrum">
+            <div class="age-sel-line"></div>
+            <div class="age-items" id="ageItems"></div>
+          </div>
+          <div class="age-quick">
+            <button class="age-q-btn" onclick="obSetAge(16)">Teen 13–17</button>
+            <button class="age-q-btn" onclick="obSetAge(22)">Young 18–25</button>
+            <button class="age-q-btn" onclick="obSetAge(32)">Adult 26–40</button>
+            <button class="age-q-btn" onclick="obSetAge(48)">Mature 41–60</button>
+            <button class="age-q-btn" onclick="obSetAge(65)">Senior 60+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Gender -->
+      <div class="ob-step" id="ob-step-2">
+        <div class="gender-grid">
+          <div class="g-card" onclick="obSelectGender('Male',this)"><div class="g-emoji">👨</div><div class="g-label">Male</div><div class="g-sub">He/Him</div></div>
+          <div class="g-card" onclick="obSelectGender('Female',this)"><div class="g-emoji">👩</div><div class="g-label">Female</div><div class="g-sub">She/Her</div></div>
+          <div class="g-card" onclick="obSelectGender('Other',this)"><div class="g-emoji">🧑</div><div class="g-label">Non-binary</div><div class="g-sub">They/Them</div></div>
+        </div>
+        <button class="g-pnts" id="gPnts" onclick="obSelectGender('Prefer not to say',this)">🔒 Prefer not to say</button>
+      </div>
+
+      <!-- Step 3: Skin Type -->
+      <div class="ob-step" id="ob-step-3">
+        <div class="skin-list">
+          <div class="s-card" onclick="obSelectSkin('Very fair, burns easily (Fitzpatrick I)',this)"><div class="s-swatch" style="background:#FDDCB5;"></div><div><div class="s-name">🌸 Very Fair</div><div class="s-desc">Burns easily, rarely tans (Type I)</div></div></div>
+          <div class="s-card" onclick="obSelectSkin('Fair, sometimes tans (Fitzpatrick II)',this)"><div class="s-swatch" style="background:#F2C68A;"></div><div><div class="s-name">🤍 Fair</div><div class="s-desc">Burns sometimes, tans gradually (II)</div></div></div>
+          <div class="s-card" onclick="obSelectSkin('Medium, tans easily (Fitzpatrick III)',this)"><div class="s-swatch" style="background:#D4956A;"></div><div><div class="s-name">🌿 Medium</div><div class="s-desc">Mild burn, tans easily (III)</div></div></div>
+          <div class="s-card" onclick="obSelectSkin('Olive, rarely burns (Fitzpatrick IV)',this)"><div class="s-swatch" style="background:#B57850;"></div><div><div class="s-name">🫒 Olive</div><div class="s-desc">Rarely burns, tans easily (IV)</div></div></div>
+          <div class="s-card" onclick="obSelectSkin('Brown, very rarely burns (Fitzpatrick V)',this)"><div class="s-swatch" style="background:#8B5E3C;"></div><div><div class="s-name">🍂 Brown</div><div class="s-desc">Very rarely burns (V)</div></div></div>
+          <div class="s-card" onclick="obSelectSkin('Dark brown, never burns (Fitzpatrick VI)',this)"><div class="s-swatch" style="background:#4A2C1A;border:1px solid rgba(255,255,255,0.1);"></div><div><div class="s-name">🌑 Dark</div><div class="s-desc">Never burns (VI)</div></div></div>
+        </div>
+      </div>
+
+      <!-- Step 4: Location -->
+      <div class="ob-step" id="ob-step-4">
+        <div class="loc-card" id="locCard" onclick="obRequestLocation()">
+          <span class="loc-icon" id="locIcon">📍</span>
+          <div class="loc-title" id="locTitle">Enable Location</div>
+          <div class="loc-desc" id="locDesc">Allow DermaCam to access your location for more accurate skin analysis</div>
+          <div class="loc-status" id="locStatus">📍 Tap to enable location</div>
+        </div>
+        <div class="loc-benefits">
+          <div class="loc-ben"><div class="loc-ben-icon">☀️</div><div class="loc-ben-text"><strong>UV Index</strong> — real-time sun exposure risk</div></div>
+          <div class="loc-ben"><div class="loc-ben-icon">💧</div><div class="loc-ben-text"><strong>Humidity</strong> — dry vs humid climate affects skin</div></div>
+          <div class="loc-ben"><div class="loc-ben-icon">🌫️</div><div class="loc-ben-text"><strong>Pollution</strong> — air quality linked to breakouts</div></div>
+          <div class="loc-ben"><div class="loc-ben-icon">🩺</div><div class="loc-ben-text"><strong>Better diagnosis</strong> — region-specific conditions</div></div>
+        </div>
+        <span class="loc-skip" onclick="obSkipLocation()">Skip for now →</span>
+      </div>
+
+      <!-- Step 5: Done -->
+      <div class="ob-step" id="ob-step-5">
+        <div class="done-wrap">
+          <div class="done-av-wrap">
+            <div class="done-av" id="doneAv"><span id="doneInit">?</span><img id="doneAvImg" src="" alt="" style="display:none"></div>
+            <div class="done-check-badge">✓</div>
+          </div>
+          <div class="done-name" id="doneName">Hey!</div>
+          <div class="done-tag">Your profile is all set 🎉</div>
+          <div class="done-summary">
+            <div class="done-row"><div class="done-row-ico">🎂</div><div class="done-row-lbl">Age</div><div class="done-row-val" id="doneAge">—</div></div>
+            <div class="done-row"><div class="done-row-ico">👤</div><div class="done-row-lbl">Gender</div><div class="done-row-val" id="doneGender">—</div></div>
+            <div class="done-row"><div class="done-row-ico">🎨</div><div class="done-row-lbl">Skin</div><div class="done-row-val" id="doneSkin">—</div></div>
+            <div class="done-row"><div class="done-row-ico">📍</div><div class="done-row-lbl">Location</div><div class="done-row-val" id="doneLoc">—</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="ob-foot">
+      <button class="ob-btn-main" id="obNextBtn" onclick="obNext()">Continue →</button>
+      <button class="ob-btn-back" id="obBackBtn" style="display:none" onclick="obPrev()">← Back</button>
+      <div class="ob-foot-note">All info optional · Stored securely · Never shared</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFILE EDIT MODAL ══ -->
+<div class="pm-overlay" id="pmOverlay">
+  <div class="pm-box">
+    <div class="pm-head">
+      <div><div class="pm-title">Edit Profile ✏️</div><div class="pm-sub-text">Update your skin profile anytime</div></div>
+      <button class="pm-close-btn" onclick="closePM()">✕</button>
+    </div>
+    <div class="pm-body">
+      <div class="pm-av-row">
+        <div class="pm-av" id="pmAv"><span id="pmInit">?</span><img id="pmAvImg" src="" alt="" style="display:none"></div>
+        <div><div class="pm-uname" id="pmName">—</div><div class="pm-uemail" id="pmEmail">—</div></div>
+      </div>
+      <div class="pm-sec">
+        <span class="pm-sec-lbl">👤 Basic Info</span>
+        <div class="pm-grid2">
+          <div class="pm-fld"><label class="pm-flbl">Age</label><input class="pm-inp" id="pmAge" type="number" placeholder="e.g. 24" min="1" max="120"></div>
+          <div class="pm-fld"><label class="pm-flbl">Gender</label>
+            <select class="pm-sel" id="pmGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="pm-sec">
+        <span class="pm-sec-lbl">🎨 Skin Type</span>
+        <div class="pm-pills" id="pmSkinPills">
+          <div class="pm-pill" data-val="Very fair, burns easily (Fitzpatrick I)" onclick="pmPill(this)">🌸 Very Fair</div>
+          <div class="pm-pill" data-val="Fair, sometimes tans (Fitzpatrick II)" onclick="pmPill(this)">🤍 Fair</div>
+          <div class="pm-pill" data-val="Medium, tans easily (Fitzpatrick III)" onclick="pmPill(this)">🌿 Medium</div>
+          <div class="pm-pill" data-val="Olive, rarely burns (Fitzpatrick IV)" onclick="pmPill(this)">🫒 Olive</div>
+          <div class="pm-pill" data-val="Brown, very rarely burns (Fitzpatrick V)" onclick="pmPill(this)">🍂 Brown</div>
+          <div class="pm-pill" data-val="Dark brown, never burns (Fitzpatrick VI)" onclick="pmPill(this)">🌑 Dark</div>
+        </div>
+      </div>
+      <div class="pm-sec">
+        <span class="pm-sec-lbl">📍 Location</span>
+        <div class="pm-fld"><label class="pm-flbl">City / Region</label><input class="pm-inp" id="pmLocation" placeholder="e.g. Mumbai, India" readonly></div>
+        <button onclick="pmRequestLoc()" style="width:100%;padding:9px;background:var(--surface2);border:1px dashed rgba(126,217,143,0.3);border-radius:10px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--accent-dim)'" onmouseout="this.style.background='var(--surface2)'">📍 Update Location</button>
+      </div>
+      <div class="pm-sec">
+        <span class="pm-sec-lbl">🏥 Known Conditions</span>
+        <div class="pm-fld"><label class="pm-flbl">Skin conditions / allergies</label><input class="pm-inp" id="pmConditions" placeholder="e.g. Eczema, latex allergy..."></div>
+      </div>
+    </div>
+    <div class="pm-foot">
+      <button class="pm-cancel" onclick="closePM()">Cancel</button>
+      <button class="pm-save" onclick="pmSave()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDKs -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
 <script>
-// ── Auth Guard + Firebase ───────────────────────────────────
+// ── Firebase ────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyBJcwi0mMESVrVNe2V3G2mpfwA1vx0RCUc",
   authDomain: "dermacam-928db.firebaseapp.com",
@@ -728,20 +966,38 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// Check localStorage first for instant UI (no flash)
 const cachedUser = JSON.parse(localStorage.getItem('dermacam-user') || 'null');
 if (!cachedUser) window.location.href = '/login';
 else initUserChip(cachedUser);
 
-// Firebase auth state — source of truth
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    localStorage.removeItem('dermacam-user');
-    window.location.href = '/login';
-  } else {
-    const userData = { uid:user.uid, name:user.displayName, email:user.email, photo:user.photoURL };
-    localStorage.setItem('dermacam-user', JSON.stringify(userData));
-    initUserChip(userData);
+auth.onAuthStateChanged(async user => {
+  if (!user) { localStorage.removeItem('dermacam-user'); window.location.href = '/login'; return; }
+  const userData = { uid:user.uid, name:user.displayName, email:user.email, photo:user.photoURL };
+  localStorage.setItem('dermacam-user', JSON.stringify(userData));
+  initUserChip(userData);
+  // Save basic user info to DB (without overwriting onboarded)
+  fetch('/save-user', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({uid:user.uid, name:user.displayName, email:user.email})
+  }).catch(e=>console.warn('User save failed:',e));
+  // Check onboarded status — localStorage first (fast), then DB (cross-device)
+  const localOnboarded = localStorage.getItem(`dermacam-onboarded-${user.uid}`);
+  if (localOnboarded) return; // already done on this device
+  try {
+    const res = await fetch(`/get-user?uid=${user.uid}`);
+    const userDB = await res.json();
+    if (userDB.onboarded) {
+      // Already onboarded on another device — save to localStorage and skip
+      localStorage.setItem(`dermacam-onboarded-${user.uid}`, 'true');
+    } else {
+      // New user — show onboarding
+      document.getElementById('obOverlay').classList.add('open');
+      obInitAge();
+    }
+  } catch(e) {
+    // DB check failed — fallback: show onboarding if no local flag
+    document.getElementById('obOverlay').classList.add('open');
+    obInitAge();
   }
 });
 
@@ -754,13 +1010,8 @@ function initUserChip(user) {
   chip.style.display = 'flex';
   chipName.textContent = (user.name || '').split(' ')[0] || 'User';
   signoutEmail.textContent = user.email || '';
-  if (user.photo) {
-    avatar.src = user.photo;
-    avatar.style.display = 'block';
-    initial.style.display = 'none';
-  } else {
-    initial.textContent = (user.name || 'U')[0].toUpperCase();
-  }
+  if (user.photo) { avatar.src = user.photo; avatar.style.display = 'block'; initial.style.display = 'none'; }
+  else { initial.textContent = (user.name || 'U')[0].toUpperCase(); }
 }
 
 async function signOutUser(e) {
@@ -771,13 +1022,248 @@ async function signOutUser(e) {
   window.location.href = '/login';
 }
 
-// Close dropdown when clicking outside
 document.addEventListener('click', (e) => {
   const chip = document.getElementById('userChip');
   if (!chip.contains(e.target)) chip.classList.remove('open');
 });
 
-// ── Service Worker ──────────────────────────────────────────
+// ── ONBOARDING STATE ────────────────────────────────────────
+let obStep = 1;
+const OB_TOTAL = 5;
+let obData = { age:22, gender:'', skin_type:'', location:'', lat:null, lng:null };
+
+const obMeta = [
+  null,
+  { badge:'Step 1 of 4 · Age', title:'How old are you?', sub:'Age affects skin conditions — hormones, oil production, healing speed', btn:'Continue →' },
+  { badge:'Step 2 of 4 · Gender', title:'What\'s your gender?', sub:'Hormonal differences affect skin type, acne, and treatment response', btn:'Continue →' },
+  { badge:'Step 3 of 4 · Skin Type', title:'What\'s your skin tone?', sub:'Fitzpatrick scale helps AI assess UV sensitivity and condition risk', btn:'Continue →' },
+  { badge:'Step 4 of 4 · Location', title:'Allow location access?', sub:'Better diagnosis with real-time UV, humidity & pollution data', btn:'Continue →' },
+  { badge:'All done! 🎉', title:'Profile Complete!', sub:'Your AI dermatologist is now personalized just for you', btn:'🔬 Start Scanning' },
+];
+
+function obUpdateUI() {
+  const m = obMeta[obStep];
+  document.getElementById('obBadge').textContent = m.badge;
+  document.getElementById('obTitle').textContent = m.title;
+  document.getElementById('obSub').textContent = m.sub;
+  document.getElementById('obNextBtn').textContent = m.btn;
+  document.getElementById('obFill').style.width = ((obStep-1)/(OB_TOTAL-1)*100) + '%';
+  document.getElementById('obBackBtn').style.display = (obStep > 1 && obStep < 5) ? 'block' : 'none';
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'));
+  document.getElementById(`ob-step-${obStep}`).classList.add('active');
+  if (obStep === 5) { obFillDone(); document.getElementById('obFill').style.width = '100%'; }
+}
+
+function obNext() {
+  if (obStep === 5) { obSaveAndClose(); return; }
+  obStep++; obUpdateUI();
+}
+function obPrev() { if (obStep > 1) { obStep--; obUpdateUI(); } }
+
+function obFillDone() {
+  const user = JSON.parse(localStorage.getItem('dermacam-user') || '{}');
+  const name = (user.name || 'Friend').split(' ')[0];
+  document.getElementById('doneName').textContent = `Hey, ${name}!`;
+  if (user.photo) {
+    document.getElementById('doneAvImg').src = user.photo;
+    document.getElementById('doneAvImg').style.display = 'block';
+    document.getElementById('doneInit').style.display = 'none';
+  } else {
+    document.getElementById('doneInit').textContent = (user.name || 'U')[0].toUpperCase();
+  }
+  document.getElementById('doneAge').textContent = obData.age + ' years';
+  document.getElementById('doneGender').textContent = obData.gender || 'Not specified';
+  document.getElementById('doneSkin').textContent = (obData.skin_type || 'Not specified').split(',')[0];
+  document.getElementById('doneLoc').textContent = obData.location || 'Not provided';
+}
+
+async function obSaveAndClose() {
+  const user = JSON.parse(localStorage.getItem('dermacam-user') || '{}');
+  if (user.uid) {
+    localStorage.setItem(`dermacam-profile-${user.uid}`, JSON.stringify(obData));
+    localStorage.setItem(`dermacam-onboarded-${user.uid}`, 'true');
+    try {
+      await fetch('/save-user', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ uid:user.uid, name:user.name, email:user.email, age:obData.age, gender:obData.gender, skin_type:obData.skin_type, location:obData.location, onboarded:true })
+      });
+    } catch(e) {}
+  }
+  document.getElementById('obOverlay').classList.remove('open');
+  showToast('✅ Profile saved! Ready to scan 🔬');
+}
+
+// ── AGE DRUM ─────────────────────────────────────────────────
+const MIN_A = 5, MAX_A = 100, ITEM_H = 44;
+let selAge = 22, isDrag = false, dragStartY = 0, dragStartOff = 0, curOff = 0;
+
+function obInitAge() {
+  const cont = document.getElementById('ageItems');
+  cont.innerHTML = '';
+  for (let a = MIN_A; a <= MAX_A; a++) {
+    const d = document.createElement('div');
+    d.className = 'age-item'; d.dataset.age = a; d.textContent = a;
+    d.onclick = () => obSetAge(a);
+    cont.appendChild(d);
+  }
+  obSetAge(22, false);
+}
+
+function obSetAge(age, anim=true) {
+  selAge = Math.min(MAX_A, Math.max(MIN_A, age));
+  obData.age = selAge;
+  const disp = document.getElementById('ageBig');
+  disp.textContent = selAge;
+  disp.classList.remove('bump'); void disp.offsetWidth; disp.classList.add('bump');
+  const idx = selAge - MIN_A;
+  curOff = -(idx * ITEM_H);
+  const items = document.getElementById('ageItems');
+  items.style.transition = anim ? 'transform 0.22s ease' : 'none';
+  items.style.transform = `translateY(${curOff}px)`;
+  document.querySelectorAll('.age-item').forEach(el => {
+    const a = parseInt(el.dataset.age);
+    el.className = 'age-item';
+    if (a === selAge) el.classList.add('sel');
+    else if (Math.abs(a - selAge) === 1) el.classList.add('near');
+  });
+  document.querySelectorAll('.age-q-btn').forEach(b => b.classList.remove('act'));
+  const btns = document.querySelectorAll('.age-q-btn');
+  if (age<=17) btns[0]?.classList.add('act');
+  else if (age<=25) btns[1]?.classList.add('act');
+  else if (age<=40) btns[2]?.classList.add('act');
+  else if (age<=60) btns[3]?.classList.add('act');
+  else btns[4]?.classList.add('act');
+}
+
+const drum = document.getElementById('ageDrum');
+drum.addEventListener('mousedown', e => { isDrag=true; dragStartY=e.clientY; dragStartOff=curOff; e.preventDefault(); });
+drum.addEventListener('touchstart', e => { isDrag=true; dragStartY=e.touches[0].clientY; dragStartOff=curOff; }, {passive:true});
+document.addEventListener('mousemove', e => {
+  if (!isDrag) return;
+  const dy = e.clientY - dragStartY;
+  const newOff = Math.max(-((MAX_A-MIN_A)*ITEM_H), Math.min(0, dragStartOff+dy));
+  curOff = newOff;
+  document.getElementById('ageItems').style.transition = 'none';
+  document.getElementById('ageItems').style.transform = `translateY(${curOff}px)`;
+});
+document.addEventListener('touchmove', e => {
+  if (!isDrag) return;
+  const dy = e.touches[0].clientY - dragStartY;
+  const newOff = Math.max(-((MAX_A-MIN_A)*ITEM_H), Math.min(0, dragStartOff+dy));
+  curOff = newOff;
+  document.getElementById('ageItems').style.transition = 'none';
+  document.getElementById('ageItems').style.transform = `translateY(${curOff}px)`;
+}, {passive:true});
+function snapDrum() {
+  if (!isDrag) return; isDrag = false;
+  const idx = Math.round(-curOff / ITEM_H);
+  obSetAge(MIN_A + Math.max(0, Math.min(MAX_A-MIN_A, idx)));
+}
+document.addEventListener('mouseup', snapDrum);
+document.addEventListener('touchend', snapDrum);
+drum.addEventListener('wheel', e => { e.preventDefault(); obSetAge(selAge + (e.deltaY>0?1:-1)); }, {passive:false});
+
+// ── GENDER / SKIN ─────────────────────────────────────────────
+function obSelectGender(val, el) {
+  document.querySelectorAll('.g-card, .g-pnts').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel'); obData.gender = val;
+}
+function obSelectSkin(val, el) {
+  document.querySelectorAll('.s-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel'); obData.skin_type = val;
+}
+
+// ── LOCATION ─────────────────────────────────────────────────
+function obRequestLocation() {
+  const status = document.getElementById('locStatus');
+  status.textContent = '🔄 Getting location...'; status.className = 'loc-status';
+  if (!navigator.geolocation) { status.textContent = '❌ Not supported'; status.className = 'loc-status no'; return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      obData.lat = pos.coords.latitude; obData.lng = pos.coords.longitude;
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
+        .then(r => r.json()).then(data => {
+          const city = data.address?.city || data.address?.town || data.address?.village || 'Your area';
+          const country = data.address?.country || '';
+          obData.location = `${city}, ${country}`;
+          status.textContent = `✅ ${city}, ${country}`; status.className = 'loc-status ok';
+          document.getElementById('locCard').classList.add('granted');
+          document.getElementById('locIcon').textContent = '✅';
+          document.getElementById('locTitle').textContent = 'Location Enabled!';
+          document.getElementById('locDesc').textContent = `Using ${city} for UV index & skin insights`;
+        }).catch(() => { obData.location = 'Location saved'; status.textContent = '✅ Location saved'; status.className = 'loc-status ok'; });
+    },
+    () => { status.textContent = '❌ Permission denied'; status.className = 'loc-status no'; }
+  );
+}
+function obSkipLocation() { obData.location = 'Not provided'; obNext(); }
+
+// ── PROFILE EDIT MODAL ───────────────────────────────────────
+function openProfileModal(e) {
+  e?.stopPropagation();
+  document.getElementById('userChip').classList.remove('open');
+  const user = JSON.parse(localStorage.getItem('dermacam-user') || '{}');
+  const profile = JSON.parse(localStorage.getItem(`dermacam-profile-${user.uid||'guest'}`) || '{}');
+  if (user.photo) {
+    document.getElementById('pmAvImg').src = user.photo;
+    document.getElementById('pmAvImg').style.display = 'block';
+    document.getElementById('pmInit').style.display = 'none';
+  } else {
+    document.getElementById('pmInit').textContent = (user.name||'U')[0].toUpperCase();
+  }
+  document.getElementById('pmName').textContent = user.name || '—';
+  document.getElementById('pmEmail').textContent = user.email || '—';
+  document.getElementById('pmAge').value = profile.age || '';
+  document.getElementById('pmGender').value = profile.gender || '';
+  document.getElementById('pmLocation').value = profile.location || '';
+  document.getElementById('pmConditions').value = profile.conditions || '';
+  document.querySelectorAll('#pmSkinPills .pm-pill').forEach(p => p.classList.toggle('sel', p.dataset.val === profile.skin_type));
+  document.getElementById('pmOverlay').classList.add('open');
+}
+function closePM() { document.getElementById('pmOverlay').classList.remove('open'); }
+document.getElementById('pmOverlay').addEventListener('click', function(e) { if(e.target===this) closePM(); });
+
+function pmPill(el) {
+  document.querySelectorAll('#pmSkinPills .pm-pill').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function pmRequestLoc() {
+  if (!navigator.geolocation) { showToast('❌ Not supported'); return; }
+  showToast('📍 Getting location...');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
+        .then(r => r.json()).then(data => {
+          const city = data.address?.city || data.address?.town || 'Your area';
+          const loc = `${city}, ${data.address?.country||''}`;
+          document.getElementById('pmLocation').value = loc;
+          showToast(`✅ ${loc}`);
+        });
+    }, () => showToast('❌ Location denied')
+  );
+}
+async function pmSave() {
+  const user = JSON.parse(localStorage.getItem('dermacam-user') || '{}');
+  const skinType = document.querySelector('#pmSkinPills .pm-pill.sel')?.dataset.val || '';
+  const updated = {
+    age: parseInt(document.getElementById('pmAge').value) || null,
+    gender: document.getElementById('pmGender').value,
+    skin_type: skinType,
+    location: document.getElementById('pmLocation').value,
+    conditions: document.getElementById('pmConditions').value
+  };
+  localStorage.setItem(`dermacam-profile-${user.uid||'guest'}`, JSON.stringify(updated));
+  try {
+    await fetch('/save-user', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ uid:user.uid, name:user.name, email:user.email, ...updated })
+    });
+  } catch(e) {}
+  closePM();
+  showToast('✅ Profile updated!');
+}
+
+// ── Service Worker ───────────────────────────────────────────
 let swRegistration = null;
 async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
@@ -786,26 +1272,19 @@ async function registerSW() {
     setInterval(() => swRegistration?.active?.postMessage({ type:'CHECK_REMINDERS' }), 60000);
     setTimeout(() => swRegistration?.active?.postMessage({ type:'CHECK_REMINDERS' }), 2000);
   } catch(e) { console.warn('SW failed:', e); }
-
   navigator.serviceWorker.addEventListener('message', e => {
-  if (e.data?.type === 'PLAY_NOTIFICATION_SOUND') {
-    const ctx = new AudioContext();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.frequency.setValueAtTime(520, ctx.currentTime);
-    o.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
-    o.frequency.setValueAtTime(800, ctx.currentTime + 0.2);
-    g.gain.setValueAtTime(0.3, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-    o.start(ctx.currentTime);
-    o.stop(ctx.currentTime + 0.5);
-  }
-});
+    if (e.data?.type === 'PLAY_NOTIFICATION_SOUND') {
+      const ctx = new AudioContext(); const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.setValueAtTime(520, ctx.currentTime); o.frequency.setValueAtTime(660, ctx.currentTime+0.1); o.frequency.setValueAtTime(800, ctx.currentTime+0.2);
+      g.gain.setValueAtTime(0.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
+      o.start(ctx.currentTime); o.stop(ctx.currentTime+0.5);
+    }
+  });
 }
 registerSW();
 
-// ── Theme ───────────────────────────────────────────────────
+// ── Theme ────────────────────────────────────────────────────
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
@@ -817,12 +1296,12 @@ const savedTheme = localStorage.getItem('dermacam-theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
 document.getElementById('themeToggle').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
 
-// ── Core state ──────────────────────────────────────────────
+// ── Core state ───────────────────────────────────────────────
 let currentDiagnosis = null, patientData = {};
 let reminders = JSON.parse(localStorage.getItem('dermacam-reminders-list') || '[]');
 const SESSION_ID = 'user_' + Math.random().toString(36).slice(2,8);
 
-// ── Pre-scan form ───────────────────────────────────────────
+// ── Pre-scan form ────────────────────────────────────────────
 function selectPill(el, groupId) {
   document.querySelectorAll(`#${groupId} .pill:not(.multi)`).forEach(p => p.classList.remove('selected'));
   el.classList.toggle('selected'); updateAccuracy();
@@ -845,8 +1324,14 @@ function updateAccuracy() {
   document.getElementById('accuracyFill').style.width = score + '%';
   document.getElementById('accuracyPct').textContent = score + '%';
 }
+
 function analyzeImage() {
   if (!document.getElementById('fileInput').files[0]) return;
+  // Pre-fill prescan from saved profile
+  const user = JSON.parse(localStorage.getItem('dermacam-user') || '{}');
+  const profile = JSON.parse(localStorage.getItem(`dermacam-profile-${user.uid||'guest'}`) || '{}');
+  if (profile.age) document.getElementById('pf-age').value = profile.age;
+  if (profile.gender) document.getElementById('pf-sex').value = profile.gender;
   document.getElementById('prescanModal').classList.add('open');
   updateAccuracy();
 }
@@ -867,7 +1352,7 @@ function submitPrescan() {
 }
 document.getElementById('prescanModal').addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
 
-// ── Analysis ────────────────────────────────────────────────
+// ── Analysis ─────────────────────────────────────────────────
 async function runAnalysis() {
   const fi = document.getElementById('fileInput');
   if (!fi.files[0]) return;
@@ -878,6 +1363,8 @@ async function runAnalysis() {
   document.getElementById('resultCard').style.display = 'none';
   const fd = new FormData();
   fd.append('image', fi.files[0]);
+  const currentUser = JSON.parse(localStorage.getItem('dermacam-user') || '{}');
+  if (currentUser.uid) fd.append('uid', currentUser.uid);
   Object.entries(patientData).forEach(([k,v]) => fd.append(k, v));
   try {
     const res = await fetch('/analyze', { method:'POST', body:fd });
@@ -893,7 +1380,7 @@ async function runAnalysis() {
   }
 }
 
-// ── Share ───────────────────────────────────────────────────
+// ── Share ─────────────────────────────────────────────────────
 function openShareModal() {
   if (!currentDiagnosis) return;
   const d = currentDiagnosis;
@@ -920,9 +1407,10 @@ function downloadShareCard() {
 }
 document.getElementById('shareModal').addEventListener('click', function(e) { if(e.target===this) this.classList.remove('open'); });
 
-// ── Progress ────────────────────────────────────────────────
+// ── Progress ──────────────────────────────────────────────────
 function renderProgress() {
-  const user=JSON.parse(localStorage.getItem('dermacam-user')||'{}');const scans=JSON.parse(localStorage.getItem(`dermascans_${user.uid||'guest'}`)||'[]');
+  const user=JSON.parse(localStorage.getItem('dermacam-user')||'{}');
+  const scans=JSON.parse(localStorage.getItem(`dermascans_${user.uid||'guest'}`)||'[]');
   const panel = document.getElementById('progressPanel');
   if (!scans.length) { panel.innerHTML = `<div class="progress-empty"><div class="progress-empty-icon">📈</div><div class="progress-empty-title">No scans yet</div><div class="progress-empty-sub">Scan karo aur week by week progress track karo!</div></div>`; return; }
   const latest = scans[0];
@@ -949,7 +1437,7 @@ function renderProgress() {
 }
 function clearAllScans() { if(!confirm('Delete all scan history?')) return; const user=JSON.parse(localStorage.getItem('dermacam-user')||'{}');localStorage.removeItem(`dermascans_${user.uid||'guest'}`); renderProgress(); showToast('🗑️ Cleared'); }
 
-// ── Reminders ───────────────────────────────────────────────
+// ── Reminders ─────────────────────────────────────────────────
 const activeTimers = {};
 function saveReminder() {
   const type = document.getElementById('reminderType').value;
@@ -962,11 +1450,8 @@ function saveReminder() {
   document.getElementById('reminderModal').classList.remove('open');
   if ('Notification' in window) {
     Notification.requestPermission().then(p => {
-      if (p === 'granted') {
-        swRegistration?.active?.postMessage({ type:'SAVE_REMINDER', reminder });
-        scheduleInTabReminder(reminder);
-        showToast(`✅ Reminder set for ${time} 🔔`);
-      } else showToast('⚠️ Notifications denied in browser settings');
+      if (p === 'granted') { swRegistration?.active?.postMessage({ type:'SAVE_REMINDER', reminder }); scheduleInTabReminder(reminder); showToast(`✅ Reminder set for ${time} 🔔`); }
+      else showToast('⚠️ Notifications denied in browser settings');
     });
   }
 }
@@ -991,7 +1476,7 @@ function deleteReminder(id) {
 }
 renderReminders();
 
-// ── Default data ────────────────────────────────────────────
+// ── Default data ──────────────────────────────────────────────
 const defaultRoutines = {
   morning: [
     { name:'Cleanse', product:'CeraVe Hydrating Cleanser', tip:'Lukewarm water. 60 sec. Pat dry.', time:'~1 min' },
@@ -1065,9 +1550,7 @@ const conditionRoutines = {
       { name:'Treat', product:'Tacrolimus / Hydrocortisone', tip:'Apply while damp.', time:'~1 min' },
       { name:'Heavy Moisturize', product:'Vaseline', tip:'Thick layer.', time:'~2 min' },
     ],
-    weekly: [
-      { name:'Wash Bedding', product:'Fragrance-free detergent', tip:'Hot wash weekly.', time:'1 hr' },
-    ],
+    weekly: [{ name:'Wash Bedding', product:'Fragrance-free detergent', tip:'Hot wash weekly.', time:'1 hr' }],
     products: [
       { emoji:'🧴', name:'CeraVe Moisturising Cream', type:'Moisturizer', badge:'Barrier Repair' },
       { emoji:'🕯️', name:'Vaseline Petroleum Jelly', type:'Occlusive', badge:'Seal moisture' },
@@ -1161,7 +1644,7 @@ function capturePhoto() {
   const fl=document.createElement('div'); fl.style.cssText='position:fixed;inset:0;background:white;opacity:0.8;z-index:999;pointer-events:none;transition:opacity 0.3s'; document.body.appendChild(fl);
   setTimeout(()=>{fl.style.opacity='0';setTimeout(()=>fl.remove(),300);},100);
   c.toBlob(blob=>{
-    const img=document.getElementById('previewImg'); img.src=URL.createObjectURL(blob); 
+    const img=document.getElementById('previewImg'); img.src=URL.createObjectURL(blob);
     const file=new File([blob],'camera_scan.jpg',{type:'image/jpeg'});
     const dt=new DataTransfer(); dt.items.add(file); document.getElementById('fileInput').files=dt.files;
     stopCamera();
