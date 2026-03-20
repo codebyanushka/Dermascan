@@ -922,7 +922,7 @@ document.getElementById('shareModal').addEventListener('click', function(e) { if
 
 // ── Progress ────────────────────────────────────────────────
 function renderProgress() {
-  const scans = JSON.parse(localStorage.getItem('dermascans') || '[]');
+  const user=JSON.parse(localStorage.getItem('dermacam-user')||'{}');const scans=JSON.parse(localStorage.getItem(`dermascans_${user.uid||'guest'}`)||'[]');
   const panel = document.getElementById('progressPanel');
   if (!scans.length) { panel.innerHTML = `<div class="progress-empty"><div class="progress-empty-icon">📈</div><div class="progress-empty-title">No scans yet</div><div class="progress-empty-sub">Scan karo aur week by week progress track karo!</div></div>`; return; }
   const latest = scans[0];
@@ -947,7 +947,7 @@ function renderProgress() {
   }).join('');
   panel.innerHTML = `<div class="progress-score-card"><div class="progress-score-label">🏥 Current Skin Health Score</div><div class="progress-score-value">${baseScore}</div><div class="progress-score-sub">out of 100 — based on your latest scan</div>${trendHTML}</div><div style="font-size:13px;color:var(--muted);padding:4px 0 8px;">${scans.length} scan${scans.length>1?'s':''} total</div><div class="progress-timeline">${timelineHTML}</div><button onclick="clearAllScans()" style="margin-top:8px;padding:10px;width:100%;background:transparent;border:1px solid rgba(240,112,112,0.2);border-radius:10px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;">🗑️ Clear all scan history</button>`;
 }
-function clearAllScans() { if(!confirm('Delete all scan history?')) return; localStorage.removeItem('dermascans'); renderProgress(); showToast('🗑️ Cleared'); }
+function clearAllScans() { if(!confirm('Delete all scan history?')) return; const user=JSON.parse(localStorage.getItem('dermacam-user')||'{}');localStorage.removeItem(`dermascans_${user.uid||'guest'}`); renderProgress(); showToast('🗑️ Cleared'); }
 
 // ── Reminders ───────────────────────────────────────────────
 const activeTimers = {};
@@ -1251,7 +1251,15 @@ async function sendMessage(){
 }
 function addUserMessage(text){const c=document.getElementById('chatMessages');c.innerHTML+=`<div class="msg user"><div class="msg-avatar">👤</div><div class="msg-bubble">${text}</div></div>`;c.scrollTop=c.scrollHeight;}
 function addBotMessage(text){const c=document.getElementById('chatMessages');c.innerHTML+=`<div class="msg"><div class="msg-avatar">🤖</div><div class="msg-bubble">${text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div>`;c.scrollTop=c.scrollHeight;}
-function saveScanToHistory(d){const scans=JSON.parse(localStorage.getItem('dermascans')||'[]');const imgData=document.getElementById('previewImg').src;scans.unshift({id:Date.now(),date:new Date().toISOString(),diagnosis:d.diagnosis,scientific_name:d.scientific_name,severity:d.severity,confidence:d.confidence,category:d.category,what_is_this:d.what_is_this,is_serious:d.is_serious,causes:d.causes,symptoms:d.symptoms,home_remedies:d.home_remedies,medicine:d.medicine,doctor_advice:d.doctor_advice,prevention:d.prevention,imgData:imgData.startsWith('data:')?imgData:null});if(scans.length>20)scans.splice(20);localStorage.setItem('dermascans',JSON.stringify(scans));}
+function saveScanToHistory(d){
+  const user=JSON.parse(localStorage.getItem('dermacam-user')||'{}');
+  const key=`dermascans_${user.uid||'guest'}`;
+  const scans=JSON.parse(localStorage.getItem(key)||'[]');
+  const imgData=document.getElementById('previewImg').src;
+  scans.unshift({id:Date.now(),date:new Date().toISOString(),diagnosis:d.diagnosis,scientific_name:d.scientific_name,severity:d.severity,confidence:d.confidence,category:d.category,what_is_this:d.what_is_this,is_serious:d.is_serious,causes:d.causes,symptoms:d.symptoms,home_remedies:d.home_remedies,medicine:d.medicine,doctor_advice:d.doctor_advice,prevention:d.prevention,imgData:imgData.startsWith('data:')?imgData:null});
+  if(scans.length>20)scans.splice(20);
+  localStorage.setItem(key,JSON.stringify(scans));
+}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 document.getElementById('reminderModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 document.getElementById('medModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
