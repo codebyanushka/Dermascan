@@ -501,8 +501,16 @@ def save_scan_to_db(uid, result, img_bytes=None):
     try:
         img_b64 = base64.b64encode(img_bytes).decode()[:50000] if img_bytes else None
         conn = get_db(); cur = conn.cursor()
+
+        # ✅ Auto-upsert user first — prevents FK constraint error
         cur.execute("""
-            INSERT INTO scans (uid, diagnosis, scientific_name, severity, confidence,
+            INSERT INTO users (uid, name, email, age, gender, skin_type, location, onboarded)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (uid) DO NOTHING
+        """, (uid, '', '', None, '', '', '', False))
+
+        cur.execute("""
+            INSERT INTO scans(uid, diagnosis, scientific_name, severity, confidence,
             category, what_is_this, is_serious, causes, symptoms, home_remedies,
             medicine, doctor_advice, prevention, img_data)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
