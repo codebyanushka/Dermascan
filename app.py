@@ -13,7 +13,6 @@ import requests as req
 import redis
 import concurrent.futures
 
-# HF Specialist module
 from hf_specialist import run_hf_specialists, build_hf_context
 
 load_dotenv()
@@ -24,7 +23,7 @@ CORS(app)
 # REDIS CACHE
 # ─────────────────────────────────────────
 
-REDIS_URL   = os.getenv("REDIS_URL", "redis://localhost:6379")
+REDIS_URL    = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_client = None
 try:
     redis_client = redis.from_url(REDIS_URL, decode_responses=True)
@@ -33,7 +32,6 @@ try:
 except Exception as e:
     print(f"⚠️  Redis not available: {e} — using in-memory cache")
 
-# In-memory fallback
 mem_cache = {}
 
 def cache_get(key):
@@ -93,8 +91,8 @@ gemini_cycle = itertools.cycle(GEMINI_KEYS)
 def get_gemini():
     return google_genai.Client(api_key=next(gemini_cycle))
 
-HF_TOKEN        = os.getenv("HF_API_KEY") or os.getenv("HF_TOKEN")
-ROBOFLOW_KEY    = os.getenv("ROBOFLOW_API_KEY")
+HF_TOKEN     = os.getenv("HF_API_KEY") or os.getenv("HF_TOKEN")
+ROBOFLOW_KEY = os.getenv("ROBOFLOW_API_KEY")
 
 print(f"""
 ╔══════════════════════════════════════════╗
@@ -110,7 +108,7 @@ print(f"""
 """)
 
 # ─────────────────────────────────────────
-# ROBOFLOW — Hair + Nails
+# ROBOFLOW
 # ─────────────────────────────────────────
 
 ROBOFLOW_MODELS = {
@@ -129,26 +127,18 @@ ROBOFLOW_MODELS = {
 }
 
 def run_roboflow(category: str, img_bytes: bytes) -> dict:
-    """Call Roboflow inference API"""
     if not ROBOFLOW_KEY:
         return None
     try:
         model = ROBOFLOW_MODELS.get(category)
         if not model:
             return None
-
-        img_b64 = base64.b64encode(img_bytes).decode()
-        url = (
-            f"https://classify.roboflow.com/"
-            f"{model['project']}/{model['version']}"
-            f"?api_key={ROBOFLOW_KEY}"
-        )
-        response = req.post(
-            url,
-            data=img_b64,
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            timeout=30
-        )
+        img_b64  = base64.b64encode(img_bytes).decode()
+        url      = (f"https://classify.roboflow.com/{model['project']}/{model['version']}"
+                    f"?api_key={ROBOFLOW_KEY}")
+        response = req.post(url, data=img_b64,
+                            headers={"Content-Type": "application/x-www-form-urlencoded"},
+                            timeout=15)
         if response.status_code == 200:
             data = response.json()
             top  = data.get("top", "")
@@ -224,21 +214,9 @@ def parse_json(text: str) -> dict:
 
 def img_to_b64(image: Image.Image) -> tuple:
     buf = io.BytesIO()
-    image.save(buf, format="JPEG", quality=92)
+    image.save(buf, format="JPEG", quality=85)
     b = buf.getvalue()
     return b, base64.b64encode(b).decode()
-
-def analyze_gemini(image: Image.Image, prompt: str) -> dict:
-    client   = get_gemini()
-    img_bytes, _ = img_to_b64(image)
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=[
-            genai_types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"),
-            genai_types.Part.from_text(text=prompt),
-        ]
-    )
-    return parse_json(response.text)
 
 def analyze_groq_scout(image: Image.Image, prompt: str) -> dict:
     _, img_b64 = img_to_b64(image)
@@ -277,17 +255,13 @@ def analyze_groq_maverick(image: Image.Image, prompt: str) -> dict:
 # ─────────────────────────────────────────
 
 def parallel_vision_vote(image: Image.Image, prompt: str) -> dict:
-    """
-    Run Gemini + Groq Scout + Groq Maverick SIMULTANEOUSLY
-    Majority vote → highest confidence result wins
-    """
-    results   = {}
-    errors    = {}
+    results = {}
+    errors  = {}
 
     analyzers = {
-        "Groq Llama4 Scout 1":  analyze_groq_scout,
-        "Groq Llama4 Scout 2":  analyze_groq_scout,
-        "Groq Llama4 Scout 3":  analyze_groq_scout,
+        "Groq Llama4 Scout 1": analyze_groq_scout,
+        "Groq Llama4 Scout 2": analyze_groq_scout,
+        "Groq Llama4 Scout 3": analyze_groq_scout,
     }
 
     print(f"⚡ Running {len(analyzers)} vision models in PARALLEL...")
@@ -302,9 +276,7 @@ def parallel_vision_vote(image: Image.Image, prompt: str) -> dict:
             try:
                 result = future.result(timeout=30)
                 results[name] = result
-                diag = result.get("diagnosis", "?")
-                conf = result.get("confidence", 0)
-                print(f"  ✅ {name}: {diag} ({conf}%)")
+                print(f"  ✅ {name}: {result.get('diagnosis','?')} ({result.get('confidence',0)}%)")
             except Exception as e:
                 errors[name] = str(e)
                 print(f"  ⚠️  {name} failed: {e}")
@@ -312,23 +284,19 @@ def parallel_vision_vote(image: Image.Image, prompt: str) -> dict:
     if not results:
         return None
 
-    # Majority vote by diagnosis keyword
     from collections import Counter
     diag_map = {}
     for name, r in results.items():
         key = r.get("diagnosis", "").lower().split()[0] if r.get("diagnosis") else "unknown"
         diag_map.setdefault(key, []).append((name, r))
 
-    counts       = Counter({k: len(v) for k, v in diag_map.items()})
-    top_diag, n  = counts.most_common(1)[0]
-    agreed       = diag_map[top_diag]
-    total        = len(results)
-    agreement    = f"{n}/{total}"
-
-    # Pick highest confidence among agreed
+    counts              = Counter({k: len(v) for k, v in diag_map.items()})
+    top_diag, n         = counts.most_common(1)[0]
+    agreed              = diag_map[top_diag]
+    total               = len(results)
+    agreement           = f"{n}/{total}"
     best_name, best_result = max(agreed, key=lambda x: x[1].get("confidence", 0))
 
-    # Boost confidence if majority agrees
     if n >= 2:
         all_confs    = [r.get("confidence", 0) for _, r in agreed]
         boosted_conf = min(99, round(sum(all_confs) / len(all_confs) * 1.08))
@@ -338,21 +306,16 @@ def parallel_vision_vote(image: Image.Image, prompt: str) -> dict:
         best_result["uncertain"] = True
         print(f"🗳️  Vision Vote: SPLIT — {agreement} — marking uncertain")
 
-    best_result["vision_agreement"]   = agreement
-    best_result["models_voted"]       = list(results.keys())
-    best_result["winning_model"]      = best_name
-
+    best_result["vision_agreement"] = agreement
+    best_result["models_voted"]     = list(results.keys())
+    best_result["winning_model"]    = best_name
     return best_result
 
 # ─────────────────────────────────────────
-# FINAL REPORT — Groq Maverick
+# FINAL REPORT — llama-3.3-70b (faster)
 # ─────────────────────────────────────────
 
 def generate_final_report(voted_result: dict, patient: dict) -> dict:
-    """
-    Groq Maverick reads all voting results
-    and writes the final polished report
-    """
     try:
         report_prompt = f"""You are a senior dermatologist reviewing an AI ensemble diagnosis.
 
@@ -361,33 +324,27 @@ PATIENT: Age {patient.get('age')} | {patient.get('sex')} | Location: {patient.ge
 ENSEMBLE VOTING RESULT:
 {json.dumps(voted_result, indent=2)}
 
-Models that voted: {voted_result.get('models_voted', [])}
 Agreement: {voted_result.get('vision_agreement', '?')}
-Winning model: {voted_result.get('winning_model', '?')}
 
-Review this diagnosis. If the ensemble is correct — confirm and enhance the report.
-If something seems clinically wrong — correct it and explain in differential_diagnosis.
-
-Respond ONLY with raw valid JSON (same schema as input) with enhanced clinical details.
-Keep all original fields. Improve: what_is_this, home_remedies, medicine, doctor_advice, prevention."""
+Review this diagnosis. Confirm if correct, else correct it.
+Respond ONLY with raw valid JSON (same schema). Improve: what_is_this, home_remedies, medicine, doctor_advice, prevention."""
 
         client   = get_groq()
         response = client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.3-70b-versatile",   # ✅ faster than maverick
             messages=[
                 {"role": "system", "content": "You are a senior dermatologist. Respond ONLY with raw valid JSON."},
                 {"role": "user",   "content": report_prompt}
             ],
-            max_tokens=2500, temperature=0.1
+            max_tokens=2000, temperature=0.1
         )
         final = parse_json(response.choices[0].message.content)
-        # Preserve voting metadata
         final["vision_agreement"] = voted_result.get("vision_agreement")
         final["models_voted"]     = voted_result.get("models_voted")
-        print(f"📋 Maverick Final Report: {final.get('diagnosis')} ({final.get('confidence')}%)")
+        print(f"📋 Final Report: {final.get('diagnosis')} ({final.get('confidence')}%)")
         return final
     except Exception as e:
-        print(f"⚠️  Maverick report failed: {e} — using voted result")
+        print(f"⚠️  Report failed: {e} — using voted result")
         return voted_result
 
 # ─────────────────────────────────────────
@@ -431,19 +388,19 @@ def stats():
     except:
         pass
     return jsonify({
-        "groq_keys":     len(GROQ_KEYS),
-        "gemini_keys":   len(GEMINI_KEYS),
-        "hf_token":      "loaded" if HF_TOKEN else "missing",
-        "roboflow":      "loaded" if ROBOFLOW_KEY else "missing",
-        "redis":         "connected" if redis_client else "fallback",
-        "cache_info":    cache_info,
-        "architecture":  "Parallel async: 3x Groq Scout (key rotation) + HF Specialists + Roboflow",
+        "groq_keys":   len(GROQ_KEYS),
+        "gemini_keys": len(GEMINI_KEYS),
+        "hf_token":    "loaded" if HF_TOKEN else "missing",
+        "roboflow":    "loaded" if ROBOFLOW_KEY else "missing",
+        "redis":       "connected" if redis_client else "fallback",
+        "cache_info":  cache_info,
+        "architecture": "Parallel: 3x Groq Scout + HF + Roboflow | Reporter: llama-3.3-70b",
         "models": {
-            "vision":     ["Groq Llama4 Scout (key 1)", "Groq Llama4 Scout (key 2)", "Groq Llama4 Scout (key 3)"],
-            "skin_hf":    ["Anwarkh1/Skin_Cancer", "imfarzanansari/acne", "dima806/skin_types"],
-            "hair":       ["Roboflow/topofhead (Norwood Scale)"],
-            "nails":      ["Roboflow/yangjm96 (8 nail conditions)"],
-            "reporter":   ["Groq Llama4 Maverick (final report only)"]
+            "vision":   ["Groq Llama4 Scout ×3"],
+            "reporter": ["llama-3.3-70b-versatile"],
+            "skin_hf":  ["Anwarkh1/Skin_Cancer", "dima806/skin_types"],
+            "hair":     ["Roboflow/Norwood Scale"],
+            "nails":    ["Roboflow/nail-disease"],
         }
     })
 
@@ -502,12 +459,16 @@ def save_scan_to_db(uid, result, img_bytes=None):
         img_b64 = base64.b64encode(img_bytes).decode()[:50000] if img_bytes else None
         conn = get_db(); cur = conn.cursor()
 
-        # ✅ Auto-upsert user first — prevents FK constraint error
         cur.execute("""
             INSERT INTO users (uid, name, email, age, gender, skin_type, location, onboarded)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (uid) DO NOTHING
         """, (uid, '', '', None, '', '', '', False))
+
+        causes   = result.get('causes',   [])
+        symptoms = result.get('symptoms', [])
+        causes   = causes   if isinstance(causes,   list) else []
+        symptoms = symptoms if isinstance(symptoms, list) else []
 
         cur.execute("""
             INSERT INTO scans(uid, diagnosis, scientific_name, severity, confidence,
@@ -518,7 +479,7 @@ def save_scan_to_db(uid, result, img_bytes=None):
             uid, result.get('diagnosis'), result.get('scientific_name'),
             result.get('severity'), result.get('confidence'), result.get('category'),
             result.get('what_is_this'), result.get('is_serious'),
-            result.get('causes', []), result.get('symptoms', []),
+            causes, symptoms,
             result.get('home_remedies'), result.get('medicine'),
             result.get('doctor_advice'), result.get('prevention'), img_b64
         ))
@@ -533,9 +494,12 @@ def save_scan_to_db(uid, result, img_bytes=None):
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    file          = request.files['image']
-    img_bytes     = file.read()
-    image         = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+    file      = request.files['image']
+    img_bytes = file.read()
+
+    # ✅ Resize image for faster processing
+    image = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+    image = image.resize((512, 512), Image.LANCZOS)
 
     patient = {
         "age":              request.form.get("age",              "not provided"),
@@ -562,7 +526,7 @@ def analyze():
             save_scan_to_db(uid, cached)
         return jsonify(cached)
 
-    # ── ALL MODELS PARALLEL — HF + Roboflow + Vision simultaneously ──
+    # ── ALL MODELS PARALLEL ──
     print(f"\n🚀 ALL THREADS RUNNING IN PARALLEL...")
     hf_result       = None
     roboflow_result = None
@@ -579,11 +543,9 @@ def analyze():
             print("🏥 Thread 1-2: HF Skin Specialists...")
             return "hf", run_hf_specialists(body_location, img_bytes)
 
-    # Launch specialist thread + vision threads SIMULTANEOUSLY
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-        spec_future    = pool.submit(run_specialist_thread)
-        vision_future  = pool.submit(parallel_vision_vote, image, build_prompt(patient, "", ""))
-
+        spec_future   = pool.submit(run_specialist_thread)
+        vision_future = pool.submit(parallel_vision_vote, image, build_prompt(patient, "", ""))
         spec_type, spec_result = spec_future.result()
         voted = vision_future.result()
 
@@ -592,27 +554,23 @@ def analyze():
     else:
         roboflow_result = spec_result
 
-    # Build context from specialist results
-    hf_context = build_hf_context(hf_result)
+    hf_context       = build_hf_context(hf_result)
     roboflow_context = ""
     if roboflow_result:
         roboflow_context = f"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ROBOFLOW SPECIALIST PRE-DIAGNOSIS:
-  Condition:  {roboflow_result.get('label')}
-  Confidence: {roboflow_result.get('confidence')}%
-→ Confirm or elaborate on this finding
+ROBOFLOW SPECIALIST: {roboflow_result.get('label')} ({roboflow_result.get('confidence')}%)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"""
 
     if not voted:
         print("❌ All vision models failed")
         return jsonify({**ERROR_FALLBACK, "error": "All providers failed"})
 
-    # ── STEP 3: MAVERICK FINAL REPORT ──
-    print(f"\n🏥 STEP 3: Groq Maverick writing final report...")
+    # ── FINAL REPORT ──
+    print(f"\n🏥 STEP 3: Writing final report (llama-3.3-70b)...")
     result = generate_final_report(voted, patient)
 
-    # ── MERGE HF/ROBOFLOW AGREEMENT ──
+    # ── SPECIALIST AGREEMENT ──
     specialist_diag = None
     if hf_result:
         specialist_diag = hf_result.get("hf_diagnosis", "")
@@ -622,30 +580,23 @@ ROBOFLOW SPECIALIST PRE-DIAGNOSIS:
     if specialist_diag:
         vision_diag = (result.get("diagnosis") or "").lower()
         spec_lower  = specialist_diag.lower()
-        agree       = any(
-            word in vision_diag
-            for word in spec_lower.split()
-            if len(word) > 4
-        )
+        agree = any(word in vision_diag for word in spec_lower.split() if len(word) > 4)
         if agree:
-            boosted = min(99, round((result.get("confidence", 70) + 5)))
+            boosted = min(99, round(result.get("confidence", 70) + 5))
             result["confidence"]           = boosted
             result["specialist_agreement"] = True
-            result["specialist_source"]    = "HuggingFace" if hf_result else "Roboflow"
             result["specialist_diagnosis"] = specialist_diag
-            print(f"🎯 Specialist AGREES! Final confidence: {boosted}%")
+            print(f"🎯 Specialist AGREES! Confidence: {boosted}%")
         else:
             result["specialist_disagreement"] = True
             result["specialist_diagnosis"]    = specialist_diag
             print(f"⚠️  Specialist DISAGREES — {specialist_diag} vs {result.get('diagnosis')}")
 
     print(f"\n{'='*55}")
-    print(f"✅ FINAL: {result.get('diagnosis')} ({result.get('confidence')}%) | Agreement: {result.get('vision_agreement')}")
+    print(f"✅ FINAL: {result.get('diagnosis')} ({result.get('confidence')}%) | {result.get('vision_agreement')}")
     print(f"{'='*55}\n")
 
-    # ── CACHE + SAVE ──
     cache_set(cache_key, result, ttl=3600)
-
     if uid:
         save_scan_to_db(uid, result, img_bytes)
 
@@ -666,8 +617,6 @@ def chat_endpoint():
         data.get('diagnosis',  None)
     )
     return jsonify({"reply": reply})
-
-# ─────────────────────────────────────────
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001, host="0.0.0.0", use_reloader=False)

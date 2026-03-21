@@ -62,6 +62,8 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   flutter_local_notifications: ^17.2.4
+  speech_to_text: ^7.3.0
+  flutter_tts: ^4.2.5
   
 dev_dependencies:
   flutter_test:

@@ -148,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: _ink,
-        extendBodyBehindAppBar: true,
+        extendBodyBehindAppBar: false,
         appBar: _buildAppBar(),
         body: tabs[_currentTab],
         bottomNavigationBar: _buildNav(),

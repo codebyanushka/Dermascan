@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'voice_call_screen.dart';
 
 const String _CHAT_API = 'http://10.0.2.2:5001';
 
@@ -23,11 +24,11 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
 
   late AnimationController _dotCtrl;
 
-  // Persisted sessions
   List<_Session> _sessions = [];
   String _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
 
   static const _violet = Color(0xFF7B6EF6);
+  static const _mint = Color(0xFF34EDB3);
   static const _rose = Color(0xFFFF5E84);
   static const _ink = Color(0xFF06060F);
 
@@ -63,25 +64,25 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
       _Msg(
         role: 'bot',
         text: widget.diagnosis != null
-            ? 'Hi! 👋 I\'ve analyzed your scan — **${widget.diagnosis}** detected. Ask me anything!'
-            : 'Hi! 👋 I\'m DermAI. Upload a skin photo first, or ask me anything about skin care!',
+            ? 'Hi! 👋 Maine aapka scan dekha — **${widget.diagnosis}** detected hai. Koi bhi sawaal puchho!'
+            : 'Hi! 👋 Main DermAI hoon. Skin photo upload karo ya kuch bhi puchho skin ke baare mein!',
         time: DateTime.now(),
       ),
     );
   }
 
-  // ── Persist sessions ────────────────────────────────────────────────────
   Future<void> _loadSessions() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString('chat_sessions') ?? '[]';
-    final list = (jsonDecode(raw) as List);
     setState(() {
-      _sessions = list.map((e) => _Session.fromJson(e)).toList();
+      _sessions = (jsonDecode(raw) as List)
+          .map((e) => _Session.fromJson(e))
+          .toList();
     });
   }
 
   Future<void> _saveCurrent() async {
-    if (_messages.length <= 1) return; // only welcome msg
+    if (_messages.length <= 1) return;
     final prefs = await SharedPreferences.getInstance();
     final session = _Session(
       id: _sessionId,
@@ -95,11 +96,10 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
       createdAt: DateTime.now(),
     );
     final existing = _sessions.indexWhere((s) => s.id == _sessionId);
-    if (existing >= 0) {
+    if (existing >= 0)
       _sessions[existing] = session;
-    } else {
+    else
       _sessions.insert(0, session);
-    }
     if (_sessions.length > 20) _sessions = _sessions.sublist(0, 20);
     await prefs.setString(
       'chat_sessions',
@@ -128,7 +128,6 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
     _addWelcome();
   }
 
-  // ── Send ────────────────────────────────────────────────────────────────
   Future<void> _send(String text) async {
     if (text.trim().isEmpty) return;
     HapticFeedback.lightImpact();
@@ -166,7 +165,7 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
         _messages.add(
           _Msg(
             role: 'bot',
-            text: 'Connection error. Make sure the server is running.',
+            text: 'Connection error. Server check karo.',
             time: DateTime.now(),
           ),
         );
@@ -188,7 +187,24 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
     });
   }
 
-  // ── BUILD ────────────────────────────────────────────────────────────────
+  void _openVoiceCall() {
+    HapticFeedback.heavyImpact();
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, a, __) => VoiceCallScreen(diagnosis: widget.diagnosis),
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -253,7 +269,7 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
                       height: 6,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Color(0xFF34EDB3),
+                        color: _mint,
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -269,6 +285,23 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
               ],
             ),
           ),
+
+          // ── Voice Call button ──────────────────────────────────────
+          GestureDetector(
+            onTap: _openVoiceCall,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: _rose.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _rose.withOpacity(0.25)),
+              ),
+              child: const Icon(Icons.call_rounded, color: _rose, size: 18),
+            ),
+          ),
+          const SizedBox(width: 6),
+
           // History toggle
           _HeaderBtn(
             icon: _historyOpen
@@ -277,6 +310,7 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
             onTap: () => setState(() => _historyOpen = !_historyOpen),
           ),
           const SizedBox(width: 6),
+
           // New chat
           _HeaderBtn(icon: Icons.add_rounded, onTap: _newChat),
         ],
@@ -284,7 +318,6 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
     );
   }
 
-  // ── HISTORY PANEL ────────────────────────────────────────────────────────
   Widget _buildHistoryPanel() {
     return Expanded(
       child: _sessions.isEmpty
@@ -390,12 +423,10 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
     );
   }
 
-  // ── CHAT ─────────────────────────────────────────────────────────────────
   Widget _buildChat() {
     return Expanded(
       child: Column(
         children: [
-          // Messages
           Expanded(
             child: ListView.builder(
               controller: _scrollCtrl,
@@ -403,15 +434,11 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               itemCount: _messages.length + (_isTyping ? 1 : 0),
               itemBuilder: (_, i) {
-                if (i == _messages.length && _isTyping) {
-                  return _buildTyping();
-                }
+                if (i == _messages.length && _isTyping) return _buildTyping();
                 return _buildBubble(_messages[i]);
               },
             ),
           ),
-
-          // Quick replies
           if (_messages.length <= 2)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -446,8 +473,6 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
                     .toList(),
               ),
             ),
-
-          // Input bar
           _buildInputBar(),
         ],
       ),
@@ -574,8 +599,9 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: List.generate(3, (i) {
-                return AnimatedBuilder(
+              children: List.generate(
+                3,
+                (i) => AnimatedBuilder(
                   animation: _dotCtrl,
                   builder: (_, __) {
                     final v = ((_dotCtrl.value * 3 - i).clamp(0.0, 1.0));
@@ -590,8 +616,8 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
                       ),
                     );
                   },
-                );
-              }),
+                ),
+              ),
             ),
           ),
         ],
@@ -622,7 +648,7 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
                 textInputAction: TextInputAction.send,
                 onSubmitted: _send,
                 decoration: InputDecoration(
-                  hintText: 'Ask about your skin...',
+                  hintText: 'Apni skin ke baare mein puchho...',
                   hintStyle: TextStyle(
                     color: Colors.white.withOpacity(0.22),
                     fontSize: 14,
@@ -665,23 +691,19 @@ class _ChatbotTabState extends State<ChatbotTab> with TickerProviderStateMixin {
 
   String _fmt(DateTime d) =>
       '${d.day}/${d.month} ${d.hour}:${d.minute.toString().padLeft(2, '0')}';
-
   String _fmtTime(DateTime d) =>
       '${d.hour}:${d.minute.toString().padLeft(2, '0')}';
 }
 
-// ── Models ────────────────────────────────────────────────────────────────────
 class _Msg {
   final String role, text;
   final DateTime time;
   _Msg({required this.role, required this.text, required this.time});
-
   Map<String, dynamic> toJson() => {
     'role': role,
     'text': text,
     'time': time.toIso8601String(),
   };
-
   factory _Msg.fromJson(Map<String, dynamic> j) =>
       _Msg(role: j['role'], text: j['text'], time: DateTime.parse(j['time']));
 }
@@ -696,14 +718,12 @@ class _Session {
     required this.messages,
     required this.createdAt,
   });
-
   Map<String, dynamic> toJson() => {
     'id': id,
     'title': title,
     'createdAt': createdAt.toIso8601String(),
     'messages': messages.map((m) => m.toJson()).toList(),
   };
-
   factory _Session.fromJson(Map<String, dynamic> j) => _Session(
     id: j['id'],
     title: j['title'],
@@ -716,7 +736,6 @@ class _HeaderBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   const _HeaderBtn({required this.icon, required this.onTap});
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
