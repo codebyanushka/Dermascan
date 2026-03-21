@@ -186,6 +186,7 @@ Existing models are trained on Fitzpatrick I–III (Western skin tones). Indian 
 **Open Innovations**
 
 ---
+* Earlier we planned to name it Dermascan during the round 1 selections, later on we changed to Dermacam so there've been some files by that name*
 
 *Built with Team Dermacam - The Builders
 Anushka Tiwari , Abhipsa Bose, Anjaneya Tiwari, Vansh Bisht  for HackIndia Spark 4 
