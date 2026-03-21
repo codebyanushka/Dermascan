@@ -187,4 +187,6 @@ Existing models are trained on Fitzpatrick I–III (Western skin tones). Indian 
 
 ---
 
-*Built with ❤️ — Because 140 crore Indians deserve access to dermatology.*
+*Built with Team Dermacam - The Builders
+Anushka Tiwari , Abhipsa Bose, Anjaneya Tiwari, Vansh Bisht  for HackIndia Spark 4 
+— Because 140 crore Indians deserve access to dermatology.*
